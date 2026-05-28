@@ -13,7 +13,7 @@
 基础地址示例：
 
 ```text
-BASE_URL=http://localhost:3000
+BASE_URL=http://101.96.193.93:3000
 API_KEY=<你的令牌>
 ```
 
@@ -27,10 +27,10 @@ Content-Type: application/json
 OpenAI SDK 兼容接入时，`baseURL` 应写到 `/v1`：
 
 ```text
-baseURL = http://localhost:3000/v1
+baseURL = http://101.96.193.93:3000/v1
 ```
 
-原始 HTTP 请求时，路径需要包含 `/v1`，例如 `POST http://localhost:3000/v1/chat/completions`。
+原始 HTTP 请求时，路径需要包含 `/v1`，例如 `POST http://101.96.193.93:3000/v1/chat/completions`。
 
 ## 2. 获取模型列表
 
@@ -344,7 +344,7 @@ if (!imageUrl && !imageBase64) {
 你需要接入一个 OpenAI-compatible API gateway。
 
 环境变量：
-- API_BASE_URL: 例如 http://localhost:3000
+- API_BASE_URL: 例如 http://101.96.193.93:3000
 - API_KEY: Bearer token
 
 认证：
@@ -375,7 +375,7 @@ if (!imageUrl && !imageBase64) {
 原始 `fetch`：
 
 ```ts
-const API_BASE_URL = process.env.API_BASE_URL ?? 'http://localhost:3000'
+const API_BASE_URL = process.env.API_BASE_URL ?? 'http://101.96.193.93:3000'
 const API_KEY = process.env.API_KEY!
 
 async function chat(prompt: string) {
@@ -451,7 +451,7 @@ import os
 
 client = OpenAI(
     api_key=os.environ["API_KEY"],
-    base_url=os.environ.get("API_BASE_URL", "http://localhost:3000") + "/v1",
+    base_url=os.environ.get("API_BASE_URL", "http://101.96.193.93:3000") + "/v1",
 )
 
 completion = client.chat.completions.create(

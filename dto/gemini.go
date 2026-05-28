@@ -44,9 +44,9 @@ func (r *GeminiChatRequest) UnmarshalJSON(data []byte) error {
 }
 
 type ToolConfig struct {
-	FunctionCallingConfig *FunctionCallingConfig `json:"functionCallingConfig,omitempty"`
-	RetrievalConfig       *RetrievalConfig       `json:"retrievalConfig,omitempty"`
-	IncludeServerSideToolInvocations *bool       `json:"includeServerSideToolInvocations,omitempty"`
+	FunctionCallingConfig            *FunctionCallingConfig `json:"functionCallingConfig,omitempty"`
+	RetrievalConfig                  *RetrievalConfig       `json:"retrievalConfig,omitempty"`
+	IncludeServerSideToolInvocations *bool                  `json:"includeServerSideToolInvocations,omitempty"`
 }
 
 type FunctionCallingConfig struct {
@@ -344,6 +344,7 @@ type GeminiChatGenerationConfig struct {
 	MediaResolution            MediaResolution       `json:"mediaResolution,omitempty"`
 	Seed                       *int64                `json:"seed,omitempty"`
 	ResponseModalities         []string              `json:"responseModalities,omitempty"`
+	ResponseFormat             json.RawMessage       `json:"responseFormat,omitempty"`
 	ThinkingConfig             *GeminiThinkingConfig `json:"thinkingConfig,omitempty"`
 	SpeechConfig               json.RawMessage       `json:"speechConfig,omitempty"` // RawMessage to allow flexible speech config
 	ImageConfig                json.RawMessage       `json:"imageConfig,omitempty"`  // RawMessage to allow flexible image config
