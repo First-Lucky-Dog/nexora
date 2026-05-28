@@ -1,6 +1,12 @@
 # 生图模型与提示词模型接入文档
 
-本文档面向需要快速接入本服务的应用或 Codex 等 agent。接口整体兼容 OpenAI 风格：文本/提示词模型使用 Chat Completions，生图模型使用 Images Generations。
+本文档面向需要快速接入本服务的应用或 Codex 等 agent。接口整体兼容 OpenAI 风格：文本/提示词模型使用 Chat Completions；文生图使用 Images Generations；图生图/图片编辑按模型能力选择多模态 Chat Completions 或 Images Edits。
+
+接入时不要只按模型名称判断能力。建议把模型按业务用途分为三类：
+
+- 提示词/文本模型：只用于文本生成、提示词改写、结构化规划，例如 `gpt-5.5`、`deepseek-chat`、`deepseek-reasoner`。
+- 文生图模型：只输入文本 `prompt`，输出图片，例如 `gpt-image-2`、`nanobanana`、`nanobanana-pro`、`nanobanana-2`。
+- 图生图模型：输入文本指令和一张或多张图片，输出新图片。`nanobanana` 系列可通过多模态 `/v1/chat/completions` 使用。
 
 ## 1. 接入摘要
 
@@ -8,7 +14,9 @@
 | --- | --- | --- | --- | --- |
 | 获取可用模型 | `GET` | `/v1/models` | 全部可用模型 | OpenAI 模型列表 |
 | 提示词/文本模型 | `POST` | `/v1/chat/completions` | `gpt-5.5`、`deepseek-chat`、`deepseek-reasoner`、`deepseek-v4-*` | OpenAI Chat Completion |
-| 生图模型 | `POST` | `/v1/images/generations` | `gpt-image-2`、`nanobanana`、`nanobanana-pro`、`nanobanana-2` | OpenAI Image Response |
+| 文生图模型 | `POST` | `/v1/images/generations` | `gpt-image-2`、`nanobanana`、`nanobanana-pro`、`nanobanana-2` | OpenAI Image Response |
+| 图生图/图片编辑 | `POST` | `/v1/chat/completions` | `nanobanana`、`nanobanana-pro`、`nanobanana-2` | OpenAI Chat Completion，内容中包含图片 data URI |
+| 标准图片编辑接口 | `POST` | `/v1/images/edits` | 取决于渠道支持 | OpenAI Image Response |
 
 基础地址示例：
 
@@ -23,6 +31,8 @@ API_KEY=<你的令牌>
 Authorization: Bearer <API_KEY>
 Content-Type: application/json
 ```
+
+说明：`/v1/images/edits` 使用 `multipart/form-data`，不要手动设置 JSON `Content-Type`；让 HTTP 客户端自动生成 boundary。
 
 OpenAI SDK 兼容接入时，`baseURL` 应写到 `/v1`：
 
@@ -197,7 +207,9 @@ data: [DONE]
 
 ## 4. 生图模型接口
 
-### 4.1 请求
+本节的“生图”特指文生图：只输入文本 `prompt`，不上传参考图片。
+
+### 4.1 文生图请求
 
 ```http
 POST /v1/images/generations
@@ -237,7 +249,7 @@ POST /v1/images/generations
 - 如果模型映射到 Gemini Imagen，`size` 也可用比例格式，如 `1:1`、`16:9`、`9:16`、`3:2`、`2:3`。
 - 不同上游支持的尺寸不同，接入应用应允许服务端返回 400 并把错误信息展示给管理员。
 
-### 4.2 生图请求示例
+### 4.2 文生图请求示例
 
 `gpt-image-2`：
 
@@ -271,7 +283,7 @@ curl "$BASE_URL/v1/images/generations" \
   }'
 ```
 
-### 4.3 生图响应
+### 4.3 文生图响应
 
 URL 返回示例：
 
@@ -336,6 +348,103 @@ if (!imageUrl && !imageBase64) {
 }
 ```
 
+### 4.4 图生图/图片编辑
+
+图生图指“输入图片 + 文本指令，输出新图片”。当前推荐的 `nanobanana` 系列调用方式是多模态 Chat Completions：
+
+```http
+POST /v1/chat/completions
+Content-Type: application/json
+```
+
+最小请求示例：
+
+```json
+{
+  "model": "nanobanana",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "把这张图改成白色背景、高质量商品图风格"
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "data:image/png;base64,<输入图片base64>"
+          }
+        }
+      ]
+    }
+  ],
+  "stream": false
+}
+```
+
+`curl` 示例：
+
+```bash
+curl "$BASE_URL/v1/chat/completions" \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nanobanana",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "把这张图改成白色背景、高质量商品图风格"
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "data:image/png;base64,<输入图片base64>"
+            }
+          }
+        ]
+      }
+    ],
+    "stream": false
+  }'
+```
+
+响应读取方式：
+
+- 非流式读取 `choices[0].message.content`。
+- 如果模型返回图片，内容通常包含 markdown 图片，例如 `![image](data:image/png;base64,...)`。
+- 调用方可以从 `data:image/...;base64,...` 中取出 base64 后保存或渲染。
+
+注意事项：
+
+- 推荐传 `data:image/png;base64,...` 或 `data:image/jpeg;base64,...`，不要优先传远程 URL。
+- 远程 `image_url.url` 会由服务端下载，可能被 SSRF 防护拦截。若域名解析到私有 IP，会返回 `private IP address not allowed`。
+- `image` 不是模型名。在 `/v1/images/edits` 中，`image` 是上传文件字段；`nanobanana` 才是模型 ID。
+- `gpt-image-2` 和 `nanobanana` 不是同一个上游模型。它们只是都属于图片能力模型，可以共用 OpenAI-compatible 接口风格。
+
+标准 OpenAI-compatible 图片编辑接口是：
+
+```http
+POST /v1/images/edits
+Content-Type: multipart/form-data
+```
+
+form-data 示例：
+
+```text
+model=nanobanana
+prompt=把这张图改成白色背景、高质量商品图风格
+image=@input.png
+n=1
+size=1024x1024
+response_format=b64_json
+```
+
+该接口是否可用于某个模型，取决于对应渠道是否实现了图片编辑适配。若使用 `nanobanana` 系列遇到转换或 multipart 相关错误，优先改用上面的多模态 `/v1/chat/completions` 方式。
+
 ## 5. Agent 接入速记
 
 可直接给 Codex 或其他 agent 的最小规范：
@@ -355,16 +464,28 @@ if (!imageUrl && !imageBase64) {
 - GET ${API_BASE_URL}/v1/models
 - 使用 data[].id 作为 model
 
+模型能力区分：
+- 提示词/文本模型：`gpt-5.5`、`deepseek-chat`、`deepseek-reasoner`、`deepseek-v4-*`。只用于文本、提示词生成和改写。
+- 文生图模型：`gpt-image-2`、`nanobanana`、`nanobanana-pro`、`nanobanana-2`。只输入文本 prompt，输出图片。
+- 图生图模型：`nanobanana`、`nanobanana-pro`、`nanobanana-2`。输入文本指令和图片，输出新图片。
+
 提示词/文本：
 - POST ${API_BASE_URL}/v1/chat/completions
 - body: { "model": "gpt-5.5" 或 "deepseek-chat", "messages": [{ "role": "user", "content": "..." }] }
 - 非流式读 choices[0].message.content
 - 流式按 SSE 解析 data 行，直到 [DONE]
 
-生图：
+文生图：
 - POST ${API_BASE_URL}/v1/images/generations
 - body: { "model": "gpt-image-2" 或 "nanobanana", "prompt": "...", "n": 1, "size": "1024x1024" }
 - 优先读取 data[0].url；如果没有 url，读取 data[0].b64_json
+
+图生图：
+- 推荐 POST ${API_BASE_URL}/v1/chat/completions
+- body 使用多模态 messages，文本指令放 type=text，输入图片放 type=image_url
+- image_url.url 优先使用 data:image/png;base64,...，不要优先使用远程 URL
+- 非流式读 choices[0].message.content；如果返回 markdown 图片，从 data:image/...;base64,... 中提取图片
+- 不要把提示词/文本模型用于生图或图生图，不要把图片模型用于普通文本提示词生成
 
 错误：
 - 非 2xx 时解析 { "error": { "message": "...", "type": "...", "param": "...", "code": "..." } }
@@ -417,6 +538,40 @@ async function generateImage(prompt: string) {
   const json = await res.json()
   const first = json.data?.[0]
   return first?.url ?? first?.b64_json
+}
+
+async function editImageWithNanobanana(prompt: string, imageBase64: string, mimeType = 'image/png') {
+  const res = await fetch(`${API_BASE_URL}/v1/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'nanobanana',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:${mimeType};base64,${imageBase64}`,
+              },
+            },
+          ],
+        },
+      ],
+      stream: false,
+    }),
+  })
+
+  if (!res.ok) throw new Error(await res.text())
+  const json = await res.json()
+  const content = json.choices?.[0]?.message?.content ?? ''
+  const match = content.match(/data:(image\/[^;]+);base64,([A-Za-z0-9+/=]+)/)
+  return match ? { mimeType: match[1], base64: match[2] } : { text: content }
 }
 ```
 
@@ -502,8 +657,11 @@ print(getattr(first, "url", None) or getattr(first, "b64_json", None))
 ## 9. 接入检查清单
 
 - 启动时调用 `/v1/models`，确认 `gpt-image-2`、`nanobanana`、`gpt-5.5`、`deepseek-*` 是否在当前 token 可用范围内。
+- 在 agent 或应用内部维护模型用途白名单：提示词模型、生图模型、图生图模型分开选择。
 - 文本模型非流式读取 `choices[0].message.content`，流式按 SSE `data:` 行解析。
-- 生图结果同时兼容 `data[0].url` 和 `data[0].b64_json`。
+- 文生图调用 `/v1/images/generations`，结果同时兼容 `data[0].url` 和 `data[0].b64_json`。
+- `nanobanana` 图生图优先调用 `/v1/chat/completions` 多模态消息，并从返回内容中的 `data:image/...;base64,...` 提取图片。
+- 图生图输入图片优先使用 data URI，避免远程 URL 被 SSRF 防护拦截。
 - 生图尺寸只使用 ASCII `x`，例如 `1024x1024`。
 - 对 `usage` 字段做可选解析，不要假设每个渠道都返回完全一致的 token 明细。
 - 对 `gpt-5*` 类模型优先使用 `max_completion_tokens`、`reasoning_effort`，避免依赖 `temperature`、`top_p`。
