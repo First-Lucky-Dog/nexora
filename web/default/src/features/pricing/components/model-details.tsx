@@ -268,6 +268,8 @@ function OverviewSummaryGrid(props: { model: PricingModel }) {
 function ModelHeader(props: { model: PricingModel }) {
   const { t } = useTranslation()
   const model = props.model
+  const displayName = model.display_name || model.model_name
+  const showModelId = Boolean(displayName) && displayName !== model.model_name
   const vendorIcon = model.vendor_icon
     ? getLobeIcon(model.vendor_icon, 20)
     : null
@@ -282,8 +284,13 @@ function ModelHeader(props: { model: PricingModel }) {
     <header className='pb-4'>
       <div className='flex items-center gap-2.5'>
         {vendorIcon}
-        <h1 className='font-mono text-xl font-bold tracking-tight sm:text-2xl'>
-          {model.model_name}
+        <h1
+          className={cn(
+            'text-xl font-bold tracking-tight sm:text-2xl',
+            showModelId ? 'font-semibold' : 'font-mono'
+          )}
+        >
+          {displayName}
         </h1>
         <CopyButton
           value={model.model_name || ''}
@@ -295,6 +302,14 @@ function ModelHeader(props: { model: PricingModel }) {
         />
       </div>
       <div className='mt-1 flex flex-wrap items-center gap-1.5 text-xs'>
+        {showModelId && (
+          <>
+            <span className='text-muted-foreground/70 font-mono'>
+              {model.model_name}
+            </span>
+            <span className='text-muted-foreground/30'>·</span>
+          </>
+        )}
         {model.vendor_name && (
           <span className='text-muted-foreground'>{model.vendor_name}</span>
         )}
@@ -1012,7 +1027,9 @@ export function ModelDetailsDrawer(props: ModelDetailsDrawerProps) {
         )}
       >
         <SheetHeader className='sr-only'>
-          <SheetTitle>{props.model.model_name}</SheetTitle>
+          <SheetTitle>
+            {props.model.display_name || props.model.model_name}
+          </SheetTitle>
           <SheetDescription>{t('Model details')}</SheetDescription>
         </SheetHeader>
         <div className='flex-1 overflow-y-auto px-4 pt-11 pb-5 sm:px-6 sm:pt-12 sm:pb-6'>

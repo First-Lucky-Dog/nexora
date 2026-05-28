@@ -18,18 +18,11 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { Link } from '@tanstack/react-router'
 import {
-  Activity,
   ArrowRight,
-  BadgeDollarSign,
   BookOpen,
-  Boxes,
-  CheckCircle2,
-  Gauge,
-  KeyRound,
-  Layers3,
-  LockKeyhole,
-  Route,
-  ShieldCheck,
+  Image as ImageIcon,
+  PenLine,
+  Sparkles,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/auth-store'
@@ -40,69 +33,20 @@ import { PublicLayout } from '@/components/layout'
 import { Footer } from '@/components/layout/components/footer'
 import { useHomePageContent } from './hooks'
 
-const protocolItems = ['OpenAI', 'Claude', 'Gemini', 'Responses']
-
-const metricItems = [
-  {
-    value: '50+',
-    label: 'Provider routes',
-    description: 'Connect upstream model providers behind one endpoint',
-  },
-  {
-    value: '100+',
-    label: 'Billing models',
-    description: 'Keep model usage and quota settlement visible',
-  },
-  {
-    value: '24/7',
-    label: 'Gateway logs',
-    description: 'Trace requests, channels, and token consumption',
-  },
+const modelTags = [
+  'Prompt optimization',
+  'Text to image',
+  'Style control',
+  'High detail output',
 ]
 
-const capabilityItems = [
-  {
-    icon: Route,
-    title: 'Unified routing',
-    description:
-      'Route OpenAI-compatible, Claude, Gemini, embedding, rerank, image, audio, and video requests through one gateway.',
-  },
-  {
-    icon: BadgeDollarSign,
-    title: 'Clear metering',
-    description:
-      'Keep pricing, model ratios, quota, and usage logs aligned for admins and end users.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Operational control',
-    description:
-      'Manage keys, groups, rate limits, provider health, and access policies without changing client integrations.',
-  },
-]
-
-const workflowItems = [
-  {
-    icon: KeyRound,
-    title: 'Keys',
-    description: 'Issue scoped tokens for users and apps',
-  },
-  {
-    icon: Layers3,
-    title: 'Channels',
-    description: 'Balance traffic across configured providers',
-  },
-  {
-    icon: Gauge,
-    title: 'Usage',
-    description: 'Review logs, quota, latency, and spend',
-  },
-]
-
-const healthRows = [
-  { name: 'OpenAI-compatible', status: 'Healthy', tone: 'bg-emerald-500' },
-  { name: 'Claude Messages', status: 'Ready', tone: 'bg-blue-500' },
-  { name: 'Gemini format', status: 'Observed', tone: 'bg-amber-500' },
+const ambientTokens = [
+  { text: '/imagine', className: 'top-[18%] left-[12%]' },
+  { text: 'seed', className: 'top-[24%] right-[14%]' },
+  { text: 'cfg', className: 'bottom-[22%] left-[8%]' },
+  { text: '{}', className: 'bottom-[16%] right-[9%]' },
+  { text: 'prompt.expand', className: 'top-[48%] left-[3%]' },
+  { text: 'style.lock', className: 'bottom-[38%] right-[4%]' },
 ]
 
 export function Home() {
@@ -115,14 +59,15 @@ export function Home() {
   const docsUrl =
     (status?.docs_link as string | undefined) || 'https://docs.newapi.pro'
 
-  const renderPrimaryAction = () => {
+  const renderConsoleAction = () => {
     if (isAuthenticated) {
       return (
         <Button
-          className='h-10 gap-2 rounded-lg px-4'
+          variant='outline'
+          className='border-foreground/20 h-11 gap-2 rounded-lg px-5'
           render={<Link to='/dashboard' />}
         >
-          {t('Go to Dashboard')}
+          {t('Enter Console')}
           <ArrowRight className='size-4' />
         </Button>
       )
@@ -130,11 +75,11 @@ export function Home() {
 
     return (
       <Button
-        className='h-10 gap-2 rounded-lg px-4'
-        render={<Link to='/sign-up' />}
+        variant='outline'
+        className='border-foreground/20 h-11 rounded-lg px-5'
+        render={<Link to='/sign-in' />}
       >
-        {t('Get Started')}
-        <ArrowRight className='size-4' />
+        {t('Sign in')}
       </Button>
     )
   }
@@ -145,7 +90,7 @@ export function Home() {
       return (
         <Button
           variant='outline'
-          className='h-10 gap-2 rounded-lg px-4'
+          className='border-foreground/15 bg-background/70 h-9 gap-2 rounded-lg px-3 text-xs'
           render={
             <a href={docsUrl} target='_blank' rel='noopener noreferrer' />
           }
@@ -159,7 +104,7 @@ export function Home() {
     return (
       <Button
         variant='outline'
-        className='h-10 gap-2 rounded-lg px-4'
+        className='border-foreground/15 bg-background/70 h-9 gap-2 rounded-lg px-3 text-xs'
         render={<Link to={docsUrl} />}
       >
         <BookOpen className='size-4' />
@@ -200,237 +145,151 @@ export function Home() {
 
   return (
     <PublicLayout showMainContainer={false}>
-      <main className='min-h-screen overflow-hidden pt-24'>
-        <section className='border-border/50 border-b px-4 pb-16 md:px-6 md:pb-20'>
-          <div className='mx-auto flex max-w-6xl flex-col gap-12'>
-            <div className='mx-auto flex max-w-3xl flex-col items-center text-center'>
-              <div className='border-border bg-muted/35 text-muted-foreground mb-6 inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium'>
-                <Activity className='size-3.5 text-emerald-600 dark:text-emerald-400' />
-                {t('AI gateway workspace')}
+      <main className='bg-background text-foreground relative min-h-screen overflow-hidden pt-16'>
+        <div className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(15,23,42,0.16)_1px,transparent_0)] [background-size:88px_88px] opacity-35 dark:bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.16)_1px,transparent_0)]' />
+        <div className='pointer-events-none absolute inset-x-0 top-16 h-px bg-amber-400/40' />
+        {ambientTokens.map((token) => (
+          <span
+            key={token.text}
+            className={`text-muted-foreground/30 pointer-events-none absolute hidden text-xs font-semibold md:block ${token.className}`}
+            aria-hidden='true'
+          >
+            {token.text}
+          </span>
+        ))}
+
+        <section className='relative mx-auto grid min-h-[calc(100svh-4rem)] max-w-7xl items-center gap-10 px-4 pt-14 pb-10 md:grid-cols-[0.78fr_1.22fr] md:px-6 md:pt-8'>
+          <div className='mx-auto max-w-xl text-center md:mx-0 md:text-left'>
+            <div className='border-foreground mb-7 inline-flex items-center gap-2 rounded-lg border-2 bg-amber-400 px-4 py-2 text-xs font-bold text-slate-950 shadow-[5px_5px_0_rgba(15,23,42,0.95)]'>
+              <Sparkles className='size-4' />
+              {t('Focused model access')}
+            </div>
+
+            <h1 className='text-[clamp(2.4rem,6.5vw,4.9rem)] leading-[0.96] font-black tracking-normal'>
+              <span className='block md:whitespace-nowrap'>
+                {t('Enough inspiration,')}
+              </span>
+              <span className='block md:whitespace-nowrap'>
+                {t('let Linghui handle the rest.')}
+              </span>
+            </h1>
+
+            <p className='text-muted-foreground mt-6 max-w-[34rem] text-base leading-7 md:text-lg'>
+              {t(
+                'Aggregate leading image generation and prompt models to help you move from text description to visual output faster.'
+              )}
+            </p>
+
+            <div className='mt-8 flex flex-wrap items-center justify-center gap-3 md:justify-start'>
+              <Button
+                className='border-foreground bg-foreground text-background hover:bg-foreground/90 h-11 gap-2 rounded-lg border-2 px-5 shadow-[5px_5px_0_rgba(245,158,11,0.55)]'
+                render={<Link to='/pricing' />}
+              >
+                {t('Explore Models')}
+                <ArrowRight className='size-4' />
+              </Button>
+              {renderConsoleAction()}
+            </div>
+
+            <div className='mt-7 hidden flex-wrap items-center justify-center gap-2 md:flex md:justify-start'>
+              {modelTags.map((tag) => (
+                <span
+                  key={tag}
+                  className='border-foreground/10 bg-background/75 text-muted-foreground rounded-lg border px-3 py-1.5 text-xs font-medium'
+                >
+                  {t(tag)}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className='relative mx-auto grid w-full max-w-[52rem] items-center gap-4 md:grid-cols-[0.92fr_auto_1.15fr] md:gap-3'>
+            <div className='home-bubble-in border-foreground bg-background relative z-10 mx-2 rounded-lg border-2 p-4 shadow-[8px_8px_0_rgba(245,158,11,0.55)] md:mx-0 md:p-5'>
+              <div className='mb-4 flex items-center justify-between gap-3'>
+                <div>
+                  <div className='text-muted-foreground text-xs font-semibold'>
+                    {t('Prompt optimization')}
+                  </div>
+                  <div className='mt-1 text-lg font-black'>{systemName}</div>
+                </div>
+                <div className='flex size-9 items-center justify-center rounded-lg bg-sky-500 text-white'>
+                  <PenLine className='size-4' />
+                </div>
               </div>
 
-              <h1 className='max-w-[18rem] text-3xl leading-tight font-semibold break-words sm:max-w-3xl sm:text-4xl md:text-5xl'>
-                {t('One calm front door for every model.')}
-              </h1>
-              <p className='text-muted-foreground mt-5 max-w-[21rem] text-base leading-7 break-words sm:max-w-2xl md:text-lg'>
-                {t(
-                  'Operate providers, keys, billing, and logs from a single gateway that stays compatible with your current New API system settings.'
-                )}
-              </p>
-
-              <div className='mt-8 flex flex-wrap items-center justify-center gap-3'>
-                {renderPrimaryAction()}
-                {renderDocsAction()}
-                {!isAuthenticated ? (
-                  <Button
-                    variant='ghost'
-                    className='h-10 rounded-lg px-4'
-                    render={<Link to='/pricing' />}
-                  >
-                    {t('View Pricing')}
-                  </Button>
-                ) : null}
+              <div className='space-y-3'>
+                <div className='bg-muted/70 text-muted-foreground border-foreground/10 max-w-[88%] rounded-lg border px-4 py-3 text-sm leading-6'>
+                  {t('Please optimize this image prompt.')}
+                </div>
+                <div className='ml-auto max-w-[94%] rounded-lg border-2 border-amber-300 bg-amber-400 px-4 py-3 text-sm leading-6 font-black text-slate-950 shadow-[4px_4px_0_rgba(15,23,42,0.95)]'>
+                  {t(
+                    'A cyberpunk mechanical Persian cat, neon lighting, 8k, extreme detail'
+                  )}
+                </div>
+                <div className='border-foreground/10 bg-background/80 text-muted-foreground rounded-lg border px-4 py-3 text-xs leading-5'>
+                  {t(
+                    'Prompt model refines style, texture, lighting, and detail.'
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className='border-border/70 bg-card mx-auto w-full max-w-5xl overflow-hidden rounded-lg border shadow-sm'>
-              <div className='border-border/70 bg-muted/25 flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between'>
-                <div className='flex items-center gap-2'>
-                  <div className='bg-background border-border flex size-8 items-center justify-center rounded-lg border'>
-                    <Boxes className='text-muted-foreground size-4' />
-                  </div>
-                  <div>
-                    <div className='text-sm font-medium'>{systemName}</div>
-                    <div className='text-muted-foreground text-xs'>
-                      {t('Live gateway overview')}
-                    </div>
-                  </div>
-                </div>
-                <div className='flex flex-wrap gap-2'>
-                  {protocolItems.map((item) => (
-                    <span
-                      key={item}
-                      className='border-border bg-background text-muted-foreground rounded-md border px-2 py-1 text-xs'
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
+            <div className='home-route-pulse z-20 mx-auto flex items-center justify-center md:w-24'>
+              <div className='border-foreground flex items-center gap-2 rounded-lg border-2 bg-amber-400 px-4 py-3 text-sm font-black whitespace-nowrap text-slate-950 shadow-[5px_5px_0_rgba(15,23,42,0.95)]'>
+                <span>{t('Image route')}</span>
+                <ArrowRight className='hidden size-4 md:block' />
               </div>
+            </div>
 
-              <div className='grid gap-0 lg:grid-cols-[1.2fr_0.8fr]'>
-                <div className='border-border/70 border-b p-5 lg:border-r lg:border-b-0'>
-                  <div className='mb-5 flex items-center justify-between gap-4'>
-                    <div>
-                      <h2 className='text-sm font-semibold'>
-                        {t('Request pipeline')}
-                      </h2>
-                      <p className='text-muted-foreground mt-1 text-xs'>
-                        {t('A simple path from client apps to upstream models')}
-                      </p>
-                    </div>
-                    <div className='text-muted-foreground flex items-center gap-1.5 text-xs'>
-                      <span className='size-2 rounded-sm bg-emerald-500' />
-                      {t('Online')}
-                    </div>
+            <div className='home-card-float border-foreground bg-background relative z-10 mx-2 rounded-lg border-2 p-3 shadow-[10px_10px_0_rgba(15,23,42,0.95)] md:mx-0 dark:shadow-[10px_10px_0_rgba(245,158,11,0.5)]'>
+              <div className='border-foreground absolute -top-4 right-6 z-20 rounded-lg border-2 bg-sky-500 px-3 py-2 text-xs font-black text-white shadow-[4px_4px_0_rgba(15,23,42,0.95)]'>
+                {t('Generated image')}
+              </div>
+              <div className='border-foreground/20 overflow-hidden rounded-md border'>
+                <img
+                  src='/home-cyber-cat.png'
+                  alt={t('Cyberpunk mechanical Persian cat')}
+                  className='aspect-[1.02] w-full object-cover'
+                />
+              </div>
+              <div className='mt-3 flex items-center justify-between gap-3 px-1'>
+                <div>
+                  <div className='text-sm font-black'>
+                    {t('Cyber Persian Cat')}
                   </div>
-
-                  <div className='grid gap-3 md:grid-cols-3'>
-                    {workflowItems.map((item, index) => {
-                      const Icon = item.icon
-                      return (
-                        <div
-                          key={item.title}
-                          className='border-border/70 bg-background rounded-lg border p-4'
-                        >
-                          <div className='mb-4 flex items-center justify-between'>
-                            <div className='border-border bg-muted/40 flex size-9 items-center justify-center rounded-lg border'>
-                              <Icon className='text-foreground/70 size-4' />
-                            </div>
-                            <span className='text-muted-foreground text-xs'>
-                              0{index + 1}
-                            </span>
-                          </div>
-                          <h3 className='text-sm font-medium'>
-                            {t(item.title)}
-                          </h3>
-                          <p className='text-muted-foreground mt-2 text-xs leading-5'>
-                            {t(item.description)}
-                          </p>
-                        </div>
-                      )
-                    })}
+                  <div className='text-muted-foreground mt-1 text-xs'>
+                    {t('Neon city / mechanical detail / 8k mood')}
                   </div>
                 </div>
-
-                <div className='p-5'>
-                  <div className='mb-5'>
-                    <h2 className='text-sm font-semibold'>
-                      {t('Route health')}
-                    </h2>
-                    <p className='text-muted-foreground mt-1 text-xs'>
-                      {t('Keep channel status readable at a glance')}
-                    </p>
-                  </div>
-
-                  <div className='space-y-3'>
-                    {healthRows.map((row) => (
-                      <div
-                        key={row.name}
-                        className='border-border/70 flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5'
-                      >
-                        <div className='flex min-w-0 items-center gap-2'>
-                          <span
-                            className={`size-2.5 shrink-0 rounded-sm ${row.tone}`}
-                          />
-                          <span className='truncate text-sm'>{row.name}</span>
-                        </div>
-                        <span className='text-muted-foreground shrink-0 text-xs'>
-                          {t(row.status)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className='bg-muted/30 mt-5 rounded-lg p-4'>
-                    <div className='flex items-start gap-3'>
-                      <LockKeyhole className='text-muted-foreground mt-0.5 size-4' />
-                      <p className='text-muted-foreground text-xs leading-5'>
-                        {t(
-                          'Existing navigation, authentication, documentation links, and custom home page overrides continue to work.'
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                {renderDocsAction()}
               </div>
             </div>
           </div>
         </section>
 
-        <section className='px-4 py-12 md:px-6'>
-          <div className='mx-auto grid max-w-6xl gap-4 md:grid-cols-3'>
-            {metricItems.map((item) => (
+        <section className='border-foreground/10 relative border-t px-4 py-8 md:px-6'>
+          <div className='mx-auto grid max-w-6xl gap-3 sm:grid-cols-3'>
+            {[
+              ['Prompt optimization', 'Make rough ideas more complete.'],
+              ['Text to image', 'Route polished prompts to image models.'],
+              [
+                'Creative expression',
+                'Finish visual ideas with less friction.',
+              ],
+            ].map(([title, description]) => (
               <div
-                key={item.label}
-                className='border-border/70 rounded-lg border p-5'
+                key={title}
+                className='border-foreground/10 bg-background/80 rounded-lg border p-4'
               >
-                <div className='text-3xl font-semibold'>{item.value}</div>
-                <h2 className='mt-3 text-sm font-medium'>{t(item.label)}</h2>
-                <p className='text-muted-foreground mt-2 text-sm leading-6'>
-                  {t(item.description)}
+                <div className='mb-3 flex size-9 items-center justify-center rounded-lg bg-amber-400 text-slate-950'>
+                  <ImageIcon className='size-4' />
+                </div>
+                <h2 className='text-sm font-black'>{t(title)}</h2>
+                <p className='text-muted-foreground mt-2 text-xs leading-5'>
+                  {t(description)}
                 </p>
               </div>
             ))}
-          </div>
-        </section>
-
-        <section className='border-border/50 border-t px-4 py-14 md:px-6 md:py-16'>
-          <div className='mx-auto max-w-6xl'>
-            <div className='mb-8 max-w-2xl'>
-              <h2 className='text-2xl font-semibold md:text-3xl'>
-                {t('Built for daily API operations')}
-              </h2>
-              <p className='text-muted-foreground mt-3 text-sm leading-6 md:text-base'>
-                {t(
-                  'A quieter homepage that points users to the product quickly while keeping the gateway value clear.'
-                )}
-              </p>
-            </div>
-
-            <div className='grid gap-4 md:grid-cols-3'>
-              {capabilityItems.map((item) => {
-                const Icon = item.icon
-                return (
-                  <div
-                    key={item.title}
-                    className='border-border/70 bg-card rounded-lg border p-5'
-                  >
-                    <div className='mb-5 flex size-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400'>
-                      <Icon className='size-4' />
-                    </div>
-                    <h3 className='text-base font-semibold'>{t(item.title)}</h3>
-                    <p className='text-muted-foreground mt-3 text-sm leading-6'>
-                      {t(item.description)}
-                    </p>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className='px-4 py-14 md:px-6 md:py-16'>
-          <div className='mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.9fr_1.1fr]'>
-            <div>
-              <h2 className='text-2xl font-semibold md:text-3xl'>
-                {t('Compatible with the current system')}
-              </h2>
-              <p className='text-muted-foreground mt-3 text-sm leading-6 md:text-base'>
-                {t(
-                  'The new homepage stays inside the default frontend and uses existing status, auth, docs, pricing, and dashboard routes.'
-                )}
-              </p>
-            </div>
-
-            <div className='grid gap-3 sm:grid-cols-2'>
-              {[
-                'System name and logo',
-                'Docs link setting',
-                'Pricing route',
-                'Dashboard route',
-                'Custom home page content',
-                'Public header and footer',
-              ].map((item) => (
-                <div
-                  key={item}
-                  className='border-border/70 flex items-center gap-3 rounded-lg border px-4 py-3'
-                >
-                  <CheckCircle2 className='size-4 shrink-0 text-emerald-600 dark:text-emerald-400' />
-                  <span className='text-sm'>{t(item)}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
       </main>

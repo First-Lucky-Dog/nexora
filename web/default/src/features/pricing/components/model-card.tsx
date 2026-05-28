@@ -53,6 +53,9 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
   const showRechargePrice = props.showRechargePrice ?? false
   const isTokenBased = isTokenBasedModel(props.model)
   const tokenUnitLabel = tokenUnit === 'K' ? '1K' : '1M'
+  const displayName = props.model.display_name || props.model.model_name
+  const showModelId =
+    Boolean(displayName) && displayName !== props.model.model_name
   const tags = parseTags(props.model.tags)
   const groups = props.model.enable_groups || []
   const endpoints = props.model.supported_endpoint_types || []
@@ -104,9 +107,19 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
             )}
           </div>
           <div className='min-w-0'>
-            <h3 className='text-foreground truncate font-mono text-[15px] leading-tight font-bold'>
-              {props.model.model_name}
+            <h3
+              className={cn(
+                'text-foreground truncate text-[15px] leading-tight font-bold',
+                showModelId ? 'font-semibold' : 'font-mono'
+              )}
+            >
+              {displayName}
             </h3>
+            {showModelId && (
+              <div className='text-muted-foreground/60 mt-0.5 truncate font-mono text-[11px]'>
+                {props.model.model_name}
+              </div>
+            )}
             <div className='mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs sm:mt-1 sm:gap-x-3'>
               {dynamicSummary ? (
                 dynamicSummary.isSpecialExpression ? (

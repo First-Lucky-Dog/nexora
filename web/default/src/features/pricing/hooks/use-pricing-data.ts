@@ -20,6 +20,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useStatus } from '@/hooks/use-status'
 import { getPricing } from '../api'
+import { resolveModelDisplayMetadata } from '../lib/model-display'
 
 export function usePricingData() {
   const { status } = useStatus()
@@ -49,20 +50,46 @@ export function usePricingData() {
       const vendor = model.vendor_id
         ? vendorMap.get(model.vendor_id)
         : undefined
-      return {
+      return resolveModelDisplayMetadata({
         ...model,
         key: model.model_name,
         vendor_name: vendor?.name,
         vendor_icon: vendor?.icon,
         vendor_description: vendor?.description,
         group_ratio: data.group_ratio,
-      }
+      })
     })
   }, [data])
 
+  const vendors = useMemo(() => {
+    const baseVendors = data?.vendors ?? []
+    const seen = new Set(
+      baseVendors.map((vendor) => vendor.name.trim().toLowerCase())
+    )
+    const displayOnlyVendors = []
+
+    for (const model of models) {
+      const vendorName = model.vendor_name?.trim()
+      if (!vendorName) continue
+
+      const normalized = vendorName.toLowerCase()
+      if (seen.has(normalized)) continue
+
+      displayOnlyVendors.push({
+        id: -displayOnlyVendors.length - 1,
+        name: vendorName,
+        icon: model.vendor_icon,
+        description: model.vendor_description,
+      })
+      seen.add(normalized)
+    }
+
+    return [...baseVendors, ...displayOnlyVendors]
+  }, [data?.vendors, models])
+
   return {
     models,
-    vendors: data?.vendors ?? [],
+    vendors,
     groupRatio: data?.group_ratio ?? {},
     usableGroup: data?.usable_group ?? {},
     endpointMap: data?.supported_endpoint ?? {},

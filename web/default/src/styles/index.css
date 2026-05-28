@@ -605,3 +605,60 @@ For commercial licensing, please contact support@quantumnous.com
     animation: none !important;
   }
 }
+
+/* Homepage generation demo motion */
+@keyframes home-card-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.35deg);
+  }
+}
+
+@keyframes home-bubble-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-18px) rotate(-1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+@keyframes home-route-pulse {
+  0%,
+  100% {
+    transform: translateX(0);
+    filter: drop-shadow(0 0 0 rgb(245 158 11 / 0));
+  }
+  50% {
+    transform: translateX(6px);
+    filter: drop-shadow(0 0 12px rgb(245 158 11 / 0.45));
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .home-card-float {
+    animation: home-card-float 6s ease-in-out infinite;
+  }
+
+  .home-bubble-in {
+    animation: home-bubble-in 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .home-route-pulse {
+    animation: home-route-pulse 2.2s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-card-float,
+  .home-bubble-in,
+  .home-route-pulse {
+    animation: none !important;
+    transform: none !important;
+  }
+}
