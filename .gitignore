@@ -38,4 +38,8 @@ skills-lock.json
 
 new-api-local.dump
 docs/*
-docs
+
+new-api-local.sql
+docs/openapi/image-and-prompt-models.md
+nexora-new-api-94f8e997.tar
+
