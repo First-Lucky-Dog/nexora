@@ -16,8 +16,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { Fragment, useMemo } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { SiWechat } from 'react-icons/si'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { useStatus } from '@/hooks/use-status'
@@ -39,6 +40,7 @@ interface FooterProps {
   columns?: FooterColumnProps[]
   copyright?: string
   className?: string
+  contactQrSrc?: string
 }
 
 const NEW_API_FOOTER_ATTRIBUTION_KEY = [
@@ -150,6 +152,7 @@ function ProjectAttribution(props: { currentYear: number; inline?: boolean }) {
 
 export function Footer(props: FooterProps) {
   const { t } = useTranslation()
+  const [contactQrOpen, setContactQrOpen] = useState(false)
   const {
     systemName,
     logo: systemLogo,
@@ -157,8 +160,8 @@ export function Footer(props: FooterProps) {
     demoSiteEnabled,
   } = useSystemConfig()
 
-  const displayLogo = systemLogo || props.logo || '/logo.png'
-  const displayName = systemName || props.name || 'New API'
+  const displayLogo = props.logo || systemLogo || '/logo.png'
+  const displayName = props.name || systemName || 'New API'
   const isDemoSiteMode = Boolean(demoSiteEnabled)
   const currentYear = new Date().getFullYear()
 
@@ -220,6 +223,47 @@ export function Footer(props: FooterProps) {
   )
 
   const displayColumns = props.columns ?? fallbackColumns
+  const contactControl = props.contactQrSrc ? (
+    <div
+      className='relative flex items-center gap-2'
+      onMouseEnter={() => setContactQrOpen(true)}
+      onMouseLeave={() => setContactQrOpen(false)}
+    >
+      <span className='text-muted-foreground/50 text-xs font-medium'>
+        {t('Contact')}
+      </span>
+      <button
+        type='button'
+        className='border-foreground/25 hover:bg-foreground hover:text-background inline-flex h-9 items-center gap-2 border bg-transparent px-3 text-xs font-medium transition-colors'
+        aria-label={t('Show WeChat contact QR code')}
+        aria-expanded={contactQrOpen}
+        onClick={() => setContactQrOpen(true)}
+        onFocus={() => setContactQrOpen(true)}
+        onBlur={() => setContactQrOpen(false)}
+      >
+        <SiWechat className='size-4' aria-hidden='true' />
+        <span>{t('WeChat')}</span>
+      </button>
+      <div
+        className={cn(
+          'bg-background border-foreground/20 pointer-events-none absolute bottom-full left-1/2 z-20 mb-3 w-40 -translate-x-1/2 border p-2 transition-all duration-150',
+          contactQrOpen
+            ? 'translate-y-0 opacity-100'
+            : 'translate-y-1 opacity-0'
+        )}
+        role='tooltip'
+      >
+        <img
+          src={props.contactQrSrc}
+          alt={t('WeChat')}
+          className='aspect-square w-full object-cover'
+        />
+        <p className='text-muted-foreground mt-2 text-center text-[11px] leading-4'>
+          {t('Scan the QR code to contact us.')}
+        </p>
+      </div>
+    </div>
+  ) : null
 
   if (footerHtml) {
     return (
@@ -236,6 +280,7 @@ export function Footer(props: FooterProps) {
               dangerouslySetInnerHTML={{ __html: footerHtml }}
             />
             <div className='border-border/60 text-muted-foreground/45 flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 border-t pt-4 text-xs sm:w-auto sm:justify-end sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5'>
+              {contactControl}
               <LegalLinks />
               <ProjectAttribution currentYear={currentYear} inline />
             </div>
@@ -299,6 +344,7 @@ export function Footer(props: FooterProps) {
             </span>
             <LegalLinks leadingSeparator />
           </div>
+          {contactControl}
           <ProjectAttribution currentYear={currentYear} />
         </div>
       </div>

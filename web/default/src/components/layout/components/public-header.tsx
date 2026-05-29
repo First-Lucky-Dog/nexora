@@ -63,6 +63,8 @@ export interface PublicHeaderProps {
   showNavigation?: boolean
   showAuthButtons?: boolean
   showNotifications?: boolean
+  showSiteName?: boolean
+  logoContainerClassName?: string
   className?: string
 }
 
@@ -76,6 +78,8 @@ export function PublicHeader(props: PublicHeaderProps) {
     homeUrl = '/',
     showAuthButtons = true,
     showNotifications = true,
+    showSiteName = true,
+    logoContainerClassName,
   } = props
 
   const { t } = useTranslation()
@@ -198,9 +202,15 @@ export function PublicHeader(props: PublicHeaderProps) {
             {/* Logo */}
             <Link
               to={homeUrl}
+              aria-label={displaySiteName}
               className='group flex shrink-0 items-center gap-2.5'
             >
-              <div className='flex size-7 shrink-0 items-center justify-center transition-all duration-300 group-hover:scale-105'>
+              <div
+                className={cn(
+                  'flex size-7 shrink-0 items-center justify-center transition-all duration-300 group-hover:scale-105',
+                  logoContainerClassName
+                )}
+              >
                 {loading ? (
                   <Skeleton className='size-full rounded-lg' />
                 ) : customLogo ? (
@@ -214,9 +224,15 @@ export function PublicHeader(props: PublicHeaderProps) {
                   />
                 )}
               </div>
-              <span className='text-sm font-semibold tracking-tight'>
-                {loading ? <Skeleton className='h-4 w-16' /> : displaySiteName}
-              </span>
+              {showSiteName && (
+                <span className='text-sm font-semibold tracking-tight'>
+                  {loading ? (
+                    <Skeleton className='h-4 w-16' />
+                  ) : (
+                    displaySiteName
+                  )}
+                </span>
+              )}
             </Link>
 
             {/* Desktop nav */}

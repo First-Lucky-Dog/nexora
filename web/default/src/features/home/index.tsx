@@ -16,55 +16,88 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
-import {
-  ArrowRight,
-  BookOpen,
-  Image as ImageIcon,
-  PenLine,
-  Sparkles,
-} from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/auth-store'
-import { useStatus } from '@/hooks/use-status'
+import { useSystemConfig } from '@/hooks/use-system-config'
 import { Button } from '@/components/ui/button'
 import { Markdown } from '@/components/ui/markdown'
 import { PublicLayout } from '@/components/layout'
 import { Footer } from '@/components/layout/components/footer'
 import { useHomePageContent } from './hooks'
 
-const modelTags = [
-  'Prompt optimization',
-  'Text to image',
-  'Style control',
-  'High detail output',
-]
+const BRAND_NAME = 'AI充电站'
+const BRAND_LOGO_SRC = '/ai-charging-station-logo.png'
+const WECHAT_QR_SRC = '/wechat-contact.jpg'
 
-const ambientTokens = [
-  { text: '/imagine', className: 'top-[18%] left-[12%]' },
-  { text: 'seed', className: 'top-[24%] right-[14%]' },
-  { text: 'cfg', className: 'bottom-[22%] left-[8%]' },
-  { text: '{}', className: 'bottom-[16%] right-[9%]' },
-  { text: 'prompt.expand', className: 'top-[48%] left-[3%]' },
-  { text: 'style.lock', className: 'bottom-[38%] right-[4%]' },
-]
+const modelGroups = [
+  {
+    provider: 'Gemini',
+    models: ['nanobanana', 'nanobanana2', 'nanobananapro'],
+  },
+  {
+    provider: 'GPT',
+    models: ['image2'],
+  },
+  {
+    provider: 'Midjourney',
+    models: ['Midjourney'],
+  },
+] as const
+
+const gridLines = Array.from({ length: 13 }, (_, index) => index)
+
+function BrandMark() {
+  return (
+    <img
+      src={BRAND_LOGO_SRC}
+      alt=''
+      className='h-full w-full object-contain'
+      aria-hidden='true'
+    />
+  )
+}
 
 export function Home() {
   const { t } = useTranslation()
   const { auth } = useAuthStore()
-  const { status } = useStatus()
   const isAuthenticated = !!auth.user
   const { content, isLoaded, isUrl } = useHomePageContent()
-  const systemName = (status?.system_name as string | undefined) || 'New API'
-  const docsUrl =
-    (status?.docs_link as string | undefined) || 'https://docs.newapi.pro'
+  const { systemName } = useSystemConfig()
+  const layoutBrandProps = {
+    siteName: BRAND_NAME,
+    logo: <BrandMark />,
+    showNotifications: false,
+    headerProps: {
+      showSiteName: false,
+      logoContainerClassName: 'h-11 w-44 sm:h-12 sm:w-52',
+    },
+  }
+
+  useEffect(() => {
+    const applyHomeTitle = () => {
+      document.title = BRAND_NAME
+      const metaTitle = document.querySelector(
+        'meta[name="title"]'
+      ) as HTMLMetaElement | null
+      metaTitle?.setAttribute('content', BRAND_NAME)
+    }
+
+    applyHomeTitle()
+    const timers = [600, 1800].map((delay) =>
+      window.setTimeout(applyHomeTitle, delay)
+    )
+    return () => timers.forEach((timer) => window.clearTimeout(timer))
+  }, [systemName])
 
   const renderConsoleAction = () => {
     if (isAuthenticated) {
       return (
         <Button
           variant='outline'
-          className='border-foreground/20 h-11 gap-2 rounded-lg px-5'
+          className='h-11 gap-2 rounded-none border-[#0A0A0A] bg-[#FAFAF8] px-5 font-semibold text-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-[#FAFAF8] dark:border-[#0A0A0A] dark:bg-[#FAFAF8] dark:text-[#0A0A0A] dark:hover:bg-[#0A0A0A] dark:hover:text-[#FAFAF8]'
           render={<Link to='/dashboard' />}
         >
           {t('Enter Console')}
@@ -76,7 +109,7 @@ export function Home() {
     return (
       <Button
         variant='outline'
-        className='border-foreground/20 h-11 rounded-lg px-5'
+        className='h-11 rounded-none border-[#0A0A0A] bg-[#FAFAF8] px-5 font-semibold text-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-[#FAFAF8] dark:border-[#0A0A0A] dark:bg-[#FAFAF8] dark:text-[#0A0A0A] dark:hover:bg-[#0A0A0A] dark:hover:text-[#FAFAF8]'
         render={<Link to='/sign-in' />}
       >
         {t('Sign in')}
@@ -84,38 +117,9 @@ export function Home() {
     )
   }
 
-  const renderDocsAction = () => {
-    const isExternal = docsUrl.startsWith('http')
-    if (isExternal) {
-      return (
-        <Button
-          variant='outline'
-          className='border-foreground/15 bg-background/70 h-9 gap-2 rounded-lg px-3 text-xs'
-          render={
-            <a href={docsUrl} target='_blank' rel='noopener noreferrer' />
-          }
-        >
-          <BookOpen className='size-4' />
-          {t('Docs')}
-        </Button>
-      )
-    }
-
-    return (
-      <Button
-        variant='outline'
-        className='border-foreground/15 bg-background/70 h-9 gap-2 rounded-lg px-3 text-xs'
-        render={<Link to={docsUrl} />}
-      >
-        <BookOpen className='size-4' />
-        {t('Docs')}
-      </Button>
-    )
-  }
-
   if (!isLoaded) {
     return (
-      <PublicLayout showMainContainer={false}>
+      <PublicLayout showMainContainer={false} {...layoutBrandProps}>
         <main className='flex min-h-screen items-center justify-center'>
           <div className='text-muted-foreground'>{t('Loading...')}</div>
         </main>
@@ -125,7 +129,7 @@ export function Home() {
 
   if (content) {
     return (
-      <PublicLayout showMainContainer={false}>
+      <PublicLayout showMainContainer={false} {...layoutBrandProps}>
         <main className='overflow-x-hidden'>
           {isUrl ? (
             <iframe
@@ -144,156 +148,127 @@ export function Home() {
   }
 
   return (
-    <PublicLayout showMainContainer={false}>
-      <main className='bg-background text-foreground relative min-h-screen overflow-hidden pt-16'>
-        <div className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(15,23,42,0.16)_1px,transparent_0)] [background-size:88px_88px] opacity-35 dark:bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.16)_1px,transparent_0)]' />
-        <div className='pointer-events-none absolute inset-x-0 top-16 h-px bg-amber-400/40' />
-        {ambientTokens.map((token) => (
-          <span
-            key={token.text}
-            className={`text-muted-foreground/30 pointer-events-none absolute hidden text-xs font-semibold md:block ${token.className}`}
-            aria-hidden='true'
-          >
-            {token.text}
-          </span>
-        ))}
+    <PublicLayout showMainContainer={false} {...layoutBrandProps}>
+      <main className='relative min-h-screen overflow-hidden bg-[#FAFAF8] pt-16 text-[#0A0A0A] dark:bg-[#FAFAF8] dark:text-[#0A0A0A]'>
+        <div className='pointer-events-none absolute inset-x-0 top-16 h-3 bg-[#C5E803]' />
+        <div
+          className='pointer-events-none absolute inset-x-4 top-16 bottom-0 hidden max-w-7xl md:inset-x-6 md:mx-auto md:block'
+          aria-hidden='true'
+        >
+          {gridLines.map((line) => (
+            <span
+              key={line}
+              className='absolute top-0 bottom-0 w-px bg-[#D4D4D2]'
+              style={{ left: `${(line / 12) * 100}%` }}
+            />
+          ))}
+        </div>
 
-        <section className='relative mx-auto grid min-h-[calc(100svh-4rem)] max-w-7xl items-center gap-10 px-4 pt-14 pb-10 md:grid-cols-[0.78fr_1.22fr] md:px-6 md:pt-8'>
-          <div className='mx-auto max-w-xl text-center md:mx-0 md:text-left'>
-            <div className='border-foreground mb-7 inline-flex items-center gap-2 rounded-lg border-2 bg-amber-400 px-4 py-2 text-xs font-bold text-slate-950 shadow-[5px_5px_0_rgba(15,23,42,0.95)]'>
-              <Sparkles className='size-4' />
-              {t('Focused model access')}
+        <section className='relative mx-auto grid min-h-[calc(100svh-4rem)] max-w-7xl items-stretch gap-8 px-4 py-10 md:grid-cols-[0.9fr_1.1fr] md:px-6 md:py-14'>
+          <div className='flex flex-col justify-between border-t border-[#0A0A0A] pt-6'>
+            <div>
+              <div className='grid grid-cols-[4.5rem_1fr] items-start gap-4 text-[#737373]'>
+                <div className='font-mono text-sm font-semibold'>01</div>
+                <div className='text-sm font-semibold tracking-[0.28em] uppercase'>
+                  {t('Available Models')}
+                </div>
+              </div>
+
+              <h1 className='mt-12 max-w-[38rem] text-[clamp(3rem,6.7vw,6.8rem)] leading-[0.9] font-extralight tracking-normal whitespace-nowrap text-[#0A0A0A]'>
+                {BRAND_NAME}
+              </h1>
             </div>
 
-            <h1 className='text-[clamp(2.4rem,6.5vw,4.9rem)] leading-[0.96] font-black tracking-normal'>
-              <span className='block md:whitespace-nowrap'>
-                {t('Enough inspiration,')}
-              </span>
-              <span className='block md:whitespace-nowrap'>
-                {t('let Linghui handle the rest.')}
-              </span>
-            </h1>
-
-            <p className='text-muted-foreground mt-6 max-w-[34rem] text-base leading-7 md:text-lg'>
-              {t(
-                'Aggregate leading image generation and prompt models to help you move from text description to visual output faster.'
-              )}
-            </p>
-
-            <div className='mt-8 flex flex-wrap items-center justify-center gap-3 md:justify-start'>
-              <Button
-                className='border-foreground bg-foreground text-background hover:bg-foreground/90 h-11 gap-2 rounded-lg border-2 px-5 shadow-[5px_5px_0_rgba(245,158,11,0.55)]'
-                render={<Link to='/pricing' />}
-              >
-                {t('Explore Models')}
-                <ArrowRight className='size-4' />
-              </Button>
-              {renderConsoleAction()}
-            </div>
-
-            <div className='mt-7 hidden flex-wrap items-center justify-center gap-2 md:flex md:justify-start'>
-              {modelTags.map((tag) => (
-                <span
-                  key={tag}
-                  className='border-foreground/10 bg-background/75 text-muted-foreground rounded-lg border px-3 py-1.5 text-xs font-medium'
-                >
-                  {t(tag)}
+            <div className='mt-10 border-t border-[#0A0A0A] pt-6 md:mt-0'>
+              <p className='max-w-[33rem] text-lg leading-8 font-normal text-[#0A0A0A] md:text-xl'>
+                <span className='block font-medium'>
+                  {t('Model access, simplified.')}
                 </span>
+                <span className='font-normal text-[#737373]'>
+                  {t(
+                    'Pick a model and start fast. The homepage keeps only the essentials.'
+                  )}
+                </span>
+              </p>
+
+              <div className='mt-8 flex flex-wrap items-center gap-3'>
+                <Button
+                  className='h-11 gap-2 rounded-none border border-[#0A0A0A] bg-[#C5E803] px-5 font-semibold text-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-[#FAFAF8]'
+                  render={<Link to='/pricing' />}
+                >
+                  {t('Explore Models')}
+                  <ArrowRight className='size-4' />
+                </Button>
+                {renderConsoleAction()}
+              </div>
+            </div>
+          </div>
+
+          <div className='flex min-h-[34rem] flex-col border border-[#0A0A0A] bg-[#FAFAF8]'>
+            <div className='flex items-start justify-between gap-4 border-b border-[#0A0A0A] bg-[#C5E803] px-4 py-5 sm:px-6'>
+              <div>
+                <div className='font-mono text-xs font-semibold tracking-[0.24em] uppercase'>
+                  {t('{{count}} models', {
+                    count: modelGroups.reduce(
+                      (total, group) => total + group.models.length,
+                      0
+                    ),
+                  })}
+                </div>
+                <div className='mt-2 text-[clamp(2.15rem,5.2vw,4rem)] leading-[0.9] font-extralight tracking-normal'>
+                  {t('Available Models')}
+                </div>
+              </div>
+              <div className='border border-[#0A0A0A] bg-[#FAFAF8] px-3 py-1.5 text-xs font-semibold'>
+                {t('Online')}
+              </div>
+            </div>
+
+            <div className='grid flex-1 gap-3 p-4 md:p-6'>
+              {modelGroups.map((group, index) => (
+                <div
+                  key={group.provider}
+                  className='group grid min-h-[8.5rem] gap-4 border border-[#0A0A0A] bg-[#FAFAF8] p-4 transition-colors duration-150 hover:bg-[#0A0A0A] hover:text-[#FAFAF8] sm:p-5 lg:grid-cols-[minmax(18rem,0.9fr)_1fr] lg:items-center'
+                >
+                  <div>
+                    <div className='flex items-start justify-between gap-3 font-mono text-xs font-semibold tracking-[0.18em] uppercase sm:block'>
+                      <span>0{index + 1}</span>
+                      <span className='bg-[#C5E803] px-2 py-1 text-[#0A0A0A] sm:mt-3 sm:inline-block'>
+                        {t('Ready')}
+                      </span>
+                    </div>
+                    <div className='mt-4 text-[clamp(2.65rem,4vw,3.2rem)] leading-[0.9] font-light tracking-normal'>
+                      {group.provider}
+                    </div>
+                  </div>
+
+                  <div className='grid gap-2'>
+                    {group.models.map((model) => (
+                      <div
+                        key={model}
+                        className='border border-current px-3 py-2 font-mono text-sm font-medium tracking-[0.04em] break-all group-hover:bg-[#FAFAF8] group-hover:text-[#0A0A0A]'
+                      >
+                        {model}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
-          </div>
 
-          <div className='relative mx-auto grid w-full max-w-[52rem] items-center gap-4 md:grid-cols-[0.92fr_auto_1.15fr] md:gap-3'>
-            <div className='home-bubble-in border-foreground bg-background relative z-10 mx-2 rounded-lg border-2 p-4 shadow-[8px_8px_0_rgba(245,158,11,0.55)] md:mx-0 md:p-5'>
-              <div className='mb-4 flex items-center justify-between gap-3'>
-                <div>
-                  <div className='text-muted-foreground text-xs font-semibold'>
-                    {t('Prompt optimization')}
-                  </div>
-                  <div className='mt-1 text-lg font-black'>{systemName}</div>
-                </div>
-                <div className='flex size-9 items-center justify-center rounded-lg bg-sky-500 text-white'>
-                  <PenLine className='size-4' />
-                </div>
-              </div>
-
-              <div className='space-y-3'>
-                <div className='bg-muted/70 text-muted-foreground border-foreground/10 max-w-[88%] rounded-lg border px-4 py-3 text-sm leading-6'>
-                  {t('Please optimize this image prompt.')}
-                </div>
-                <div className='ml-auto max-w-[94%] rounded-lg border-2 border-amber-300 bg-amber-400 px-4 py-3 text-sm leading-6 font-black text-slate-950 shadow-[4px_4px_0_rgba(15,23,42,0.95)]'>
-                  {t(
-                    'A cyberpunk mechanical Persian cat, neon lighting, 8k, extreme detail'
-                  )}
-                </div>
-                <div className='border-foreground/10 bg-background/80 text-muted-foreground rounded-lg border px-4 py-3 text-xs leading-5'>
-                  {t(
-                    'Prompt model refines style, texture, lighting, and detail.'
-                  )}
-                </div>
-              </div>
+            <div className='grid grid-cols-3 border-t border-[#0A0A0A] font-mono text-[11px] font-semibold tracking-[0.22em] uppercase'>
+              <div className='px-3 py-4'>Gemini</div>
+              <div className='border-x border-[#0A0A0A] px-3 py-4'>GPT</div>
+              <div className='px-3 py-4 text-right'>Midjourney</div>
             </div>
-
-            <div className='home-route-pulse z-20 mx-auto flex items-center justify-center md:w-24'>
-              <div className='border-foreground flex items-center gap-2 rounded-lg border-2 bg-amber-400 px-4 py-3 text-sm font-black whitespace-nowrap text-slate-950 shadow-[5px_5px_0_rgba(15,23,42,0.95)]'>
-                <span>{t('Image route')}</span>
-                <ArrowRight className='hidden size-4 md:block' />
-              </div>
-            </div>
-
-            <div className='home-card-float border-foreground bg-background relative z-10 mx-2 rounded-lg border-2 p-3 shadow-[10px_10px_0_rgba(15,23,42,0.95)] md:mx-0 dark:shadow-[10px_10px_0_rgba(245,158,11,0.5)]'>
-              <div className='border-foreground absolute -top-4 right-6 z-20 rounded-lg border-2 bg-sky-500 px-3 py-2 text-xs font-black text-white shadow-[4px_4px_0_rgba(15,23,42,0.95)]'>
-                {t('Generated image')}
-              </div>
-              <div className='border-foreground/20 overflow-hidden rounded-md border'>
-                <img
-                  src='/home-cyber-cat.png'
-                  alt={t('Cyberpunk mechanical Persian cat')}
-                  className='aspect-[1.02] w-full object-cover'
-                />
-              </div>
-              <div className='mt-3 flex items-center justify-between gap-3 px-1'>
-                <div>
-                  <div className='text-sm font-black'>
-                    {t('Cyber Persian Cat')}
-                  </div>
-                  <div className='text-muted-foreground mt-1 text-xs'>
-                    {t('Neon city / mechanical detail / 8k mood')}
-                  </div>
-                </div>
-                {renderDocsAction()}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className='border-foreground/10 relative border-t px-4 py-8 md:px-6'>
-          <div className='mx-auto grid max-w-6xl gap-3 sm:grid-cols-3'>
-            {[
-              ['Prompt optimization', 'Make rough ideas more complete.'],
-              ['Text to image', 'Route polished prompts to image models.'],
-              [
-                'Creative expression',
-                'Finish visual ideas with less friction.',
-              ],
-            ].map(([title, description]) => (
-              <div
-                key={title}
-                className='border-foreground/10 bg-background/80 rounded-lg border p-4'
-              >
-                <div className='mb-3 flex size-9 items-center justify-center rounded-lg bg-amber-400 text-slate-950'>
-                  <ImageIcon className='size-4' />
-                </div>
-                <h2 className='text-sm font-black'>{t(title)}</h2>
-                <p className='text-muted-foreground mt-2 text-xs leading-5'>
-                  {t(description)}
-                </p>
-              </div>
-            ))}
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer
+        name={BRAND_NAME}
+        logo={BRAND_LOGO_SRC}
+        contactQrSrc={WECHAT_QR_SRC}
+      />
     </PublicLayout>
   )
 }

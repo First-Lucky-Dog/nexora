@@ -113,10 +113,13 @@ declare module '@tanstack/react-router' {
 
 // Render the app
 const rootElement = document.getElementById('root')!
+const HOME_PAGE_TITLE = 'AI充电站'
+
 // Set document.title and favicon from cached status, then refresh from network
 ;(function initSystemBranding() {
   try {
     if (typeof window === 'undefined' || typeof document === 'undefined') return
+    const isHomePage = window.location.pathname === '/'
     const apply = (name: string) => {
       document.title = name
       const metaTitle = document.querySelector(
@@ -124,12 +127,15 @@ const rootElement = document.getElementById('root')!
       ) as HTMLMetaElement | null
       if (metaTitle) metaTitle.setAttribute('content', name)
     }
+    if (isHomePage) {
+      apply(HOME_PAGE_TITLE)
+    }
     // Cache-first
     try {
       const saved = localStorage.getItem('status')
       if (saved) {
         const s = JSON.parse(saved)
-        if (s?.system_name) apply(s.system_name)
+        if (!isHomePage && s?.system_name) apply(s.system_name)
         if (s?.logo) applyFaviconToDom(s.logo)
       }
     } catch {
@@ -138,7 +144,7 @@ const rootElement = document.getElementById('root')!
     // Background refresh
     getStatus()
       .then((s) => {
-        if (s?.system_name) {
+        if (!isHomePage && s?.system_name) {
           apply(s.system_name as string)
           try {
             localStorage.setItem('status', JSON.stringify(s))
