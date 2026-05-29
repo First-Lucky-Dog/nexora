@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
+import { isWordmarkLogo } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useStatus } from '@/hooks/use-status'
 import { useSystemConfig } from '@/hooks/use-system-config'
@@ -53,6 +54,7 @@ export function SystemBrand(props: SystemBrandProps) {
   const name = status?.system_name || props.defaultName || 'New API'
   const version =
     status?.version || props.defaultVersion || t('Unknown version')
+  const logoIsWordmark = isWordmarkLogo(logo)
 
   if (variant === 'inline') {
     return (
@@ -60,18 +62,30 @@ export function SystemBrand(props: SystemBrandProps) {
         to='/'
         aria-label={t('Go to home')}
         className={cn(
-          'text-foreground inline-flex h-7 items-center gap-1.5 rounded-md px-1.5 text-sm font-medium transition-colors outline-none select-none',
+          'text-foreground inline-flex items-center gap-1.5 rounded-md px-1.5 text-sm font-medium transition-colors outline-none select-none',
+          logoIsWordmark ? 'h-9' : 'h-7',
           'hover:bg-accent focus-visible:ring-ring/40 focus-visible:ring-2'
         )}
       >
-        <div className='flex size-5 items-center justify-center overflow-hidden rounded-md'>
+        <div
+          className={cn(
+            'flex items-center justify-center overflow-hidden',
+            logoIsWordmark ? 'h-8 w-36 rounded-none' : 'size-5 rounded-md'
+          )}
+        >
           <img
             src={logo}
             alt={t('Logo')}
-            className='size-full rounded-md object-cover'
+            className={cn(
+              logoIsWordmark
+                ? 'h-full w-full object-contain'
+                : 'size-full rounded-md object-cover'
+            )}
           />
         </div>
-        <span className='max-w-[12rem] truncate'>{name}</span>
+        {!logoIsWordmark && (
+          <span className='max-w-[12rem] truncate'>{name}</span>
+        )}
       </Link>
     )
   }
@@ -84,14 +98,30 @@ export function SystemBrand(props: SystemBrandProps) {
           className='hover:text-sidebar-foreground active:text-sidebar-foreground cursor-default hover:bg-transparent active:bg-transparent'
           render={<div />}
         >
-          <div className='flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg'>
+          <div
+            className={cn(
+              'flex items-center justify-center overflow-hidden',
+              logoIsWordmark
+                ? 'h-8 w-32 rounded-none'
+                : 'aspect-square size-8 rounded-lg'
+            )}
+          >
             <img
               src={logo}
               alt={t('Logo')}
-              className='size-full rounded-lg object-cover'
+              className={cn(
+                logoIsWordmark
+                  ? 'h-full w-full object-contain'
+                  : 'size-full rounded-lg object-cover'
+              )}
             />
           </div>
-          <div className='grid flex-1 text-start text-sm leading-tight group-data-[collapsible=icon]:hidden'>
+          <div
+            className={cn(
+              'grid flex-1 text-start text-sm leading-tight group-data-[collapsible=icon]:hidden',
+              logoIsWordmark && 'sr-only'
+            )}
+          >
             <span className='truncate font-semibold'>{name}</span>
             <span className='truncate text-xs'>{version}</span>
           </div>

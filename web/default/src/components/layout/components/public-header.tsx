@@ -20,6 +20,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/auth-store'
+import { isWordmarkLogo } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useNotifications } from '@/hooks/use-notifications'
 import { useSystemConfig } from '@/hooks/use-system-config'
@@ -105,6 +106,8 @@ export function PublicHeader(props: PublicHeaderProps) {
   const user = auth.user
   const isAuthenticated = !!user
   const displaySiteName = customSiteName || systemName
+  const logoIsWordmark = !customLogo && isWordmarkLogo(systemLogo)
+  const shouldShowSiteName = showSiteName && !logoIsWordmark
   const links = dynamicLinks.length > 0 ? dynamicLinks : navLinks
 
   useEffect(() => {
@@ -207,12 +210,20 @@ export function PublicHeader(props: PublicHeaderProps) {
             >
               <div
                 className={cn(
-                  'flex size-7 shrink-0 items-center justify-center transition-all duration-300 group-hover:scale-105',
+                  'flex shrink-0 items-center justify-center transition-all duration-300 group-hover:scale-105',
+                  logoIsWordmark
+                    ? 'h-9 w-36 sm:w-40'
+                    : 'size-7 rounded-lg',
                   logoContainerClassName
                 )}
               >
                 {loading ? (
-                  <Skeleton className='size-full rounded-lg' />
+                  <Skeleton
+                    className={cn(
+                      'size-full',
+                      logoIsWordmark ? 'rounded-none' : 'rounded-lg'
+                    )}
+                  />
                 ) : customLogo ? (
                   customLogo
                 ) : (
@@ -220,11 +231,15 @@ export function PublicHeader(props: PublicHeaderProps) {
                     src={systemLogo}
                     loading={loading}
                     logoLoaded={logoLoaded}
-                    className='size-full rounded-lg object-contain'
+                    className={cn(
+                      logoIsWordmark
+                        ? 'h-full w-full rounded-none object-contain'
+                        : 'size-full rounded-lg object-contain'
+                    )}
                   />
                 )}
               </div>
-              {showSiteName && (
+              {shouldShowSiteName && (
                 <span className='text-sm font-semibold tracking-tight'>
                   {loading ? (
                     <Skeleton className='h-4 w-16' />

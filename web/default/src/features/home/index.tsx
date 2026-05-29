@@ -97,7 +97,7 @@ export function Home() {
       return (
         <Button
           variant='outline'
-          className='h-11 gap-2 rounded-none border-[#0A0A0A] bg-[#FAFAF8] px-5 font-semibold text-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-[#FAFAF8] dark:border-[#0A0A0A] dark:bg-[#FAFAF8] dark:text-[#0A0A0A] dark:hover:bg-[#0A0A0A] dark:hover:text-[#FAFAF8]'
+          className='border-foreground bg-background text-foreground hover:bg-foreground hover:text-background h-11 gap-2 rounded-none px-5 font-semibold'
           render={<Link to='/dashboard' />}
         >
           {t('Enter Console')}
@@ -109,7 +109,7 @@ export function Home() {
     return (
       <Button
         variant='outline'
-        className='h-11 rounded-none border-[#0A0A0A] bg-[#FAFAF8] px-5 font-semibold text-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-[#FAFAF8] dark:border-[#0A0A0A] dark:bg-[#FAFAF8] dark:text-[#0A0A0A] dark:hover:bg-[#0A0A0A] dark:hover:text-[#FAFAF8]'
+        className='border-foreground bg-background text-foreground hover:bg-foreground hover:text-background h-11 rounded-none px-5 font-semibold'
         render={<Link to='/sign-in' />}
       >
         {t('Sign in')}
@@ -149,7 +149,7 @@ export function Home() {
 
   return (
     <PublicLayout showMainContainer={false} {...layoutBrandProps}>
-      <main className='relative min-h-screen overflow-hidden bg-[#FAFAF8] pt-16 text-[#0A0A0A] dark:bg-[#FAFAF8] dark:text-[#0A0A0A]'>
+      <main className='bg-background text-foreground relative min-h-screen overflow-hidden pt-16'>
         <div className='pointer-events-none absolute inset-x-0 top-16 h-3 bg-[#C5E803]' />
         <div
           className='pointer-events-none absolute inset-x-4 top-16 bottom-0 hidden max-w-7xl md:inset-x-6 md:mx-auto md:block'
@@ -158,33 +158,33 @@ export function Home() {
           {gridLines.map((line) => (
             <span
               key={line}
-              className='absolute top-0 bottom-0 w-px bg-[#D4D4D2]'
+              className='bg-border absolute top-0 bottom-0 w-px'
               style={{ left: `${(line / 12) * 100}%` }}
             />
           ))}
         </div>
 
         <section className='relative mx-auto grid min-h-[calc(100svh-4rem)] max-w-7xl items-stretch gap-8 px-4 py-10 md:grid-cols-[0.9fr_1.1fr] md:px-6 md:py-14'>
-          <div className='flex flex-col justify-between border-t border-[#0A0A0A] pt-6'>
+          <div className='border-border flex flex-col justify-between border-t pt-6'>
             <div>
-              <div className='grid grid-cols-[4.5rem_1fr] items-start gap-4 text-[#737373]'>
+              <div className='text-muted-foreground grid grid-cols-[4.5rem_1fr] items-start gap-4'>
                 <div className='font-mono text-sm font-semibold'>01</div>
                 <div className='text-sm font-semibold tracking-[0.28em] uppercase'>
                   {t('Available Models')}
                 </div>
               </div>
 
-              <h1 className='mt-12 max-w-[38rem] text-[clamp(3rem,6.7vw,6.8rem)] leading-[0.9] font-extralight tracking-normal whitespace-nowrap text-[#0A0A0A]'>
+              <h1 className='text-foreground mt-12 max-w-[38rem] text-[clamp(3rem,6.7vw,6.8rem)] leading-[0.9] font-extralight tracking-normal whitespace-nowrap'>
                 {BRAND_NAME}
               </h1>
             </div>
 
-            <div className='mt-10 border-t border-[#0A0A0A] pt-6 md:mt-0'>
-              <p className='max-w-[33rem] text-lg leading-8 font-normal text-[#0A0A0A] md:text-xl'>
+            <div className='border-border mt-10 border-t pt-6 md:mt-0'>
+              <p className='text-foreground max-w-[33rem] text-lg leading-8 font-normal md:text-xl'>
                 <span className='block font-medium'>
                   {t('Model access, simplified.')}
                 </span>
-                <span className='font-normal text-[#737373]'>
+                <span className='text-muted-foreground font-normal'>
                   {t(
                     'Pick a model and start fast. The homepage keeps only the essentials.'
                   )}
@@ -193,7 +193,7 @@ export function Home() {
 
               <div className='mt-8 flex flex-wrap items-center gap-3'>
                 <Button
-                  className='h-11 gap-2 rounded-none border border-[#0A0A0A] bg-[#C5E803] px-5 font-semibold text-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-[#FAFAF8]'
+                  className='hover:bg-foreground hover:text-background h-11 gap-2 rounded-none border border-[#0A0A0A] bg-[#C5E803] px-5 font-semibold text-[#0A0A0A]'
                   render={<Link to='/pricing' />}
                 >
                   {t('Explore Models')}
@@ -204,9 +204,9 @@ export function Home() {
             </div>
           </div>
 
-          <div className='flex min-h-[34rem] flex-col border border-[#0A0A0A] bg-[#FAFAF8]'>
-            <div className='flex items-start justify-between gap-4 border-b border-[#0A0A0A] bg-[#C5E803] px-4 py-5 sm:px-6'>
-              <div>
+          <div className='border-border bg-card flex min-h-[34rem] flex-col border'>
+            <div className='flex flex-col gap-4 border-b border-[#0A0A0A] bg-[#C5E803] px-4 py-5 text-[#0A0A0A] sm:flex-row sm:items-start sm:justify-between sm:px-6'>
+              <div className='min-w-0'>
                 <div className='font-mono text-xs font-semibold tracking-[0.24em] uppercase'>
                   {t('{{count}} models', {
                     count: modelGroups.reduce(
@@ -215,11 +215,11 @@ export function Home() {
                     ),
                   })}
                 </div>
-                <div className='mt-2 text-[clamp(2.15rem,5.2vw,4rem)] leading-[0.9] font-extralight tracking-normal'>
+                <div className='mt-2 max-w-[34rem] text-[clamp(1.9rem,4.4vw,3.55rem)] leading-[0.95] font-extralight tracking-normal break-words'>
                   {t('Available Models')}
                 </div>
               </div>
-              <div className='border border-[#0A0A0A] bg-[#FAFAF8] px-3 py-1.5 text-xs font-semibold'>
+              <div className='w-fit shrink-0 border border-[#0A0A0A] bg-[#FAFAF8] px-3 py-1.5 text-xs font-semibold text-[#0A0A0A]'>
                 {t('Online')}
               </div>
             </div>
@@ -228,7 +228,7 @@ export function Home() {
               {modelGroups.map((group, index) => (
                 <div
                   key={group.provider}
-                  className='group grid min-h-[8.5rem] gap-4 border border-[#0A0A0A] bg-[#FAFAF8] p-4 transition-colors duration-150 hover:bg-[#0A0A0A] hover:text-[#FAFAF8] sm:p-5 lg:grid-cols-[minmax(18rem,0.9fr)_1fr] lg:items-center'
+                  className='border-border bg-background hover:bg-foreground hover:text-background group grid min-h-[8.5rem] gap-4 border p-4 transition-colors duration-150 sm:p-5 lg:grid-cols-[minmax(18rem,0.9fr)_1fr] lg:items-center'
                 >
                   <div>
                     <div className='flex items-start justify-between gap-3 font-mono text-xs font-semibold tracking-[0.18em] uppercase sm:block'>
@@ -246,7 +246,7 @@ export function Home() {
                     {group.models.map((model) => (
                       <div
                         key={model}
-                        className='border border-current px-3 py-2 font-mono text-sm font-medium tracking-[0.04em] break-all group-hover:bg-[#FAFAF8] group-hover:text-[#0A0A0A]'
+                        className='group-hover:bg-background group-hover:text-foreground border border-current px-3 py-2 font-mono text-sm font-medium tracking-[0.04em] break-all'
                       >
                         {model}
                       </div>
@@ -256,9 +256,9 @@ export function Home() {
               ))}
             </div>
 
-            <div className='grid grid-cols-3 border-t border-[#0A0A0A] font-mono text-[11px] font-semibold tracking-[0.22em] uppercase'>
+            <div className='border-border grid grid-cols-3 border-t font-mono text-[11px] font-semibold tracking-[0.22em] uppercase'>
               <div className='px-3 py-4'>Gemini</div>
-              <div className='border-x border-[#0A0A0A] px-3 py-4'>GPT</div>
+              <div className='border-border border-x px-3 py-4'>GPT</div>
               <div className='px-3 py-4 text-right'>Midjourney</div>
             </div>
           </div>

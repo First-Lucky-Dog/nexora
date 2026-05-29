@@ -20,6 +20,7 @@ import { Fragment, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { SiWechat } from 'react-icons/si'
 import { useTranslation } from 'react-i18next'
+import { isWordmarkLogo } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useStatus } from '@/hooks/use-status'
 import { useSystemConfig } from '@/hooks/use-system-config'
@@ -162,6 +163,7 @@ export function Footer(props: FooterProps) {
 
   const displayLogo = props.logo || systemLogo || '/logo.png'
   const displayName = props.name || systemName || 'New API'
+  const logoIsWordmark = isWordmarkLogo(displayLogo)
   const isDemoSiteMode = Boolean(demoSiteEnabled)
   const currentYear = new Date().getFullYear()
 
@@ -298,15 +300,27 @@ export function Footer(props: FooterProps) {
         <div className='flex flex-col justify-between gap-10 md:flex-row md:gap-16'>
           {/* Brand column */}
           <div className='shrink-0'>
-            <Link to='/' className='group flex items-center gap-2.5'>
+            <Link
+              to='/'
+              className={cn(
+                'group flex items-center',
+                logoIsWordmark ? 'gap-0' : 'gap-2.5'
+              )}
+            >
               <img
                 src={displayLogo}
                 alt={displayName}
-                className='size-7 rounded-lg object-contain'
+                className={cn(
+                  logoIsWordmark
+                    ? 'h-9 w-40 rounded-none object-contain'
+                    : 'size-7 rounded-lg object-contain'
+                )}
               />
-              <span className='text-sm font-semibold tracking-tight'>
-                {displayName}
-              </span>
+              {!logoIsWordmark && (
+                <span className='text-sm font-semibold tracking-tight'>
+                  {displayName}
+                </span>
+              )}
             </Link>
             <p className='text-muted-foreground/60 mt-3 max-w-[200px] text-xs leading-relaxed'>
               {t('Powerful API Management Platform')}

@@ -22,6 +22,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { isWordmarkLogo } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useSystemConfig } from '@/hooks/use-system-config'
 import {
@@ -76,6 +77,7 @@ export function SetupWizard() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { systemName, logo, loading: systemConfigLoading } = useSystemConfig()
+  const logoIsWordmark = isWordmarkLogo(logo)
 
   const [currentStep, setCurrentStep] = useState(0)
   const [setupStatus, setSetupStatus] = useState<SetupStatus | undefined>()
@@ -283,14 +285,28 @@ export function SetupWizard() {
       </div>
       <div className='container mx-auto flex max-w-5xl flex-col gap-8 px-4 sm:px-6'>
         <div className='flex flex-col items-center gap-3'>
-          <div className='relative h-12 w-12'>
+          <div
+            className={cn(
+              'relative',
+              logoIsWordmark ? 'h-12 w-48' : 'h-12 w-12'
+            )}
+          >
             {systemConfigLoading ? (
-              <Skeleton className='absolute inset-0 rounded-full' />
+              <Skeleton
+                className={cn(
+                  'absolute inset-0',
+                  logoIsWordmark ? 'rounded-none' : 'rounded-full'
+                )}
+              />
             ) : (
               <img
                 src={logo}
                 alt={t('System logo')}
-                className='h-12 w-12 rounded-full object-cover shadow-sm'
+                className={cn(
+                  logoIsWordmark
+                    ? 'h-full w-full rounded-none object-contain'
+                    : 'h-12 w-12 rounded-full object-cover shadow-sm'
+                )}
               />
             )}
           </div>

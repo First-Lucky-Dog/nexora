@@ -23,6 +23,17 @@ For commercial licensing, please contact support@quantumnous.com
 // System Configuration Defaults
 export const DEFAULT_SYSTEM_NAME = 'New API'
 export const DEFAULT_LOGO = '/ai-charging-station-logo.png'
+export const WORDMARK_LOGO_PATHS = [DEFAULT_LOGO] as const
+
+export function isWordmarkLogo(logo?: string | null) {
+  const src = logo?.trim()
+  return Boolean(
+    src &&
+      WORDMARK_LOGO_PATHS.some(
+        (path) => src === path || src.endsWith(path)
+      )
+  )
+}
 
 // LocalStorage Keys
 export const STORAGE_KEYS = {
