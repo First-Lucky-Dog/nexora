@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { Fragment, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { SiWechat } from 'react-icons/si'
+import { SiQq } from 'react-icons/si'
 import { useTranslation } from 'react-i18next'
 import { isWordmarkLogo } from '@/lib/constants'
 import { cn } from '@/lib/utils'
@@ -237,14 +237,14 @@ export function Footer(props: FooterProps) {
       <button
         type='button'
         className='border-foreground/25 hover:bg-foreground hover:text-background inline-flex h-9 items-center gap-2 border bg-transparent px-3 text-xs font-medium transition-colors'
-        aria-label={t('Show WeChat contact QR code')}
+        aria-label={t('Show QQ contact QR code')}
         aria-expanded={contactQrOpen}
         onClick={() => setContactQrOpen(true)}
         onFocus={() => setContactQrOpen(true)}
         onBlur={() => setContactQrOpen(false)}
       >
-        <SiWechat className='size-4' aria-hidden='true' />
-        <span>{t('WeChat')}</span>
+        <SiQq className='size-4' aria-hidden='true' />
+        <span>{t('QQ')}</span>
       </button>
       <div
         className={cn(
@@ -257,11 +257,11 @@ export function Footer(props: FooterProps) {
       >
         <img
           src={props.contactQrSrc}
-          alt={t('WeChat')}
+          alt={t('QQ')}
           className='aspect-square w-full object-cover'
         />
         <p className='text-muted-foreground mt-2 text-center text-[11px] leading-4'>
-          {t('Scan the QR code to contact us.')}
+          {t('Scan the QQ QR code to contact us.')}
         </p>
       </div>
     </div>

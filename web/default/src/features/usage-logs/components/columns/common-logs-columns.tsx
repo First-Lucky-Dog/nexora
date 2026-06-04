@@ -554,7 +554,7 @@ export function useCommonLogsColumns(isAdmin: boolean): ColumnDef<UsageLog>[] {
             ? log.completion_tokens / useTime
             : null
         const timeVariant = getResponseTimeColor(useTime, log.completion_tokens)
-        const frtVariant = frt ? getFirstResponseTimeColor(frt / 1000) : null
+        const frtVariant = frt ? getFirstResponseTimeColor(frt / 1000) : 'neutral'
 
         const timingBgMap: Record<string, string> = {
           success:

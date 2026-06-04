@@ -30,7 +30,7 @@ import { useHomePageContent } from './hooks'
 
 const BRAND_NAME = 'AI充电站'
 const BRAND_LOGO_SRC = '/ai-charging-station-logo.png'
-const WECHAT_QR_SRC = '/wechat-contact.jpg'
+const QQ_QR_SRC = '/qq-contact.jpg'
 
 const modelGroups = [
   {
@@ -267,7 +267,7 @@ export function Home() {
       <Footer
         name={BRAND_NAME}
         logo={BRAND_LOGO_SRC}
-        contactQrSrc={WECHAT_QR_SRC}
+        contactQrSrc={QQ_QR_SRC}
       />
     </PublicLayout>
   )
