@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { api, get2FAStatus } from '@/lib/api'
+import { translateApiMessage } from '@/lib/api-message'
 import {
   buildAssertionResult,
   prepareCredentialRequestOptions,
@@ -95,7 +96,9 @@ async function verifyTwoFA(code?: string | null): Promise<void> {
   })
 
   if (!res.data?.success) {
-    throw new Error(res.data?.message || 'Verification failed')
+    throw new Error(
+      translateApiMessage(res.data?.message, 'Verification failed')
+    )
   }
 }
 
@@ -110,7 +113,12 @@ async function verifyPasskey(): Promise<void> {
   try {
     const beginResponse = await beginPasskeyVerification()
     if (!beginResponse.success) {
-      throw new Error(beginResponse.message || 'Failed to start verification')
+      throw new Error(
+        translateApiMessage(
+          beginResponse.message,
+          'Failed to start verification'
+        )
+      )
     }
 
     const publicKey = prepareCredentialRequestOptions(
@@ -132,7 +140,12 @@ async function verifyPasskey(): Promise<void> {
 
     const finishResponse = await finishPasskeyVerification(assertion)
     if (!finishResponse.success) {
-      throw new Error(finishResponse.message || 'Passkey verification failed')
+      throw new Error(
+        translateApiMessage(
+          finishResponse.message,
+          'Passkey verification failed'
+        )
+      )
     }
 
     const verifyResponse = await api.post('/api/verify', {
@@ -141,7 +154,10 @@ async function verifyPasskey(): Promise<void> {
 
     if (!verifyResponse.data?.success) {
       throw new Error(
-        verifyResponse.data?.message || 'Failed to complete verification'
+        translateApiMessage(
+          verifyResponse.data?.message,
+          'Failed to complete verification'
+        )
       )
     }
   } catch (error: unknown) {

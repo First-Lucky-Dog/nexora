@@ -23,6 +23,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { translateApiMessage } from '@/lib/api-message'
 import { cn } from '@/lib/utils'
 import { useStatus } from '@/hooks/use-status'
 import { Button } from '@/components/ui/button'
@@ -65,6 +66,7 @@ export function SignUpForm({
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const [verificationCode, setVerificationCode] = useState('')
+  const [verificationEmail, setVerificationEmail] = useState('')
   const [agreedToLegal, setAgreedToLegal] = useState(false)
   const [wechatCode, setWeChatCode] = useState('')
   const [isWeChatDialogOpen, setIsWeChatDialogOpen] = useState(false)
@@ -100,7 +102,8 @@ export function SignUpForm({
     },
   })
 
-  const emailValue = form.watch('email')
+  const emailValue = form.watch('email') ?? ''
+  const normalizedEmailValue = emailValue.trim()
   const emailVerificationRequired = !!status?.email_verification
   const hasUserAgreement = Boolean(status?.user_agreement_enabled)
   const hasPrivacyPolicy = Boolean(status?.privacy_policy_enabled)
@@ -157,6 +160,15 @@ export function SignUpForm({
         toast.error(t('Please enter the verification code'))
         return
       }
+      if (verificationEmail && normalizedEmailValue !== verificationEmail) {
+        toast.error(
+          t(
+            'The verification code was sent to {{email}}. Please use that email address or send a new code.',
+            { email: verificationEmail }
+          )
+        )
+        return
+      }
     }
 
     if (!validateTurnstile()) return
@@ -176,7 +188,9 @@ export function SignUpForm({
         toast.success(t('Account created! Please sign in'))
         redirectToLogin()
       } else {
-        toast.error(res?.message || t('Failed to create account'))
+        toast.error(
+          translateApiMessage(res?.message, 'Failed to create account')
+        )
       }
     } catch (_error) {
       // Errors are handled by global interceptor
@@ -186,7 +200,10 @@ export function SignUpForm({
   }
 
   async function handleSendVerificationCode() {
-    await sendCode(emailValue || '')
+    const sent = await sendCode(normalizedEmailValue)
+    if (sent) {
+      setVerificationEmail(normalizedEmailValue)
+    }
   }
 
   const handleOpenWeChatDialog = () => {
@@ -220,7 +237,7 @@ export function SignUpForm({
         toast.success(t('Signed in via WeChat'))
         handleWeChatDialogChange(false)
       } else {
-        toast.error(res?.message || t('Login failed'))
+        toast.error(translateApiMessage(res?.message, 'Login failed'))
       }
     } catch (_error) {
       toast.error(t('Login failed'))

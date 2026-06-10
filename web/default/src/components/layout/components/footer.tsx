@@ -16,8 +16,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useMemo, useState, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
+import { QRCodeSVG } from 'qrcode.react'
 import { SiQq } from 'react-icons/si'
 import { useTranslation } from 'react-i18next'
 import { isWordmarkLogo } from '@/lib/constants'
@@ -42,6 +43,8 @@ interface FooterProps {
   copyright?: string
   className?: string
   contactQrSrc?: string
+  storeQrValue?: string
+  storeIconSrc?: string
 }
 
 const NEW_API_FOOTER_ATTRIBUTION_KEY = [
@@ -151,9 +154,51 @@ function ProjectAttribution(props: { currentYear: number; inline?: boolean }) {
   )
 }
 
+function FooterQrButton(props: {
+  label: string
+  ariaLabel: string
+  description: string
+  icon: ReactNode
+  children: ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div
+      className='relative'
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button
+        type='button'
+        className='group/button border-foreground/25 hover:bg-foreground hover:text-background inline-flex h-9 items-center gap-2 border bg-transparent px-3 text-xs font-medium transition-colors'
+        aria-label={props.ariaLabel}
+        aria-expanded={open}
+        onClick={() => setOpen(true)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+      >
+        {props.icon}
+        <span>{props.label}</span>
+      </button>
+      <div
+        className={cn(
+          'bg-background border-foreground/20 pointer-events-none absolute bottom-full left-1/2 z-20 mb-3 w-40 -translate-x-1/2 border p-2 transition-all duration-150',
+          open ? 'translate-y-0 opacity-100' : 'translate-y-1 opacity-0'
+        )}
+        role='tooltip'
+      >
+        <div className='bg-white p-1 text-black'>{props.children}</div>
+        <p className='text-muted-foreground mt-2 text-center text-[11px] leading-4'>
+          {props.description}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function Footer(props: FooterProps) {
   const { t } = useTranslation()
-  const [contactQrOpen, setContactQrOpen] = useState(false)
   const {
     systemName,
     logo: systemLogo,
@@ -225,47 +270,51 @@ export function Footer(props: FooterProps) {
   )
 
   const displayColumns = props.columns ?? fallbackColumns
-  const contactControl = props.contactQrSrc ? (
-    <div
-      className='relative flex items-center gap-2'
-      onMouseEnter={() => setContactQrOpen(true)}
-      onMouseLeave={() => setContactQrOpen(false)}
-    >
-      <span className='text-muted-foreground/50 text-xs font-medium'>
-        {t('Contact')}
-      </span>
-      <button
-        type='button'
-        className='border-foreground/25 hover:bg-foreground hover:text-background inline-flex h-9 items-center gap-2 border bg-transparent px-3 text-xs font-medium transition-colors'
-        aria-label={t('Show QQ contact QR code')}
-        aria-expanded={contactQrOpen}
-        onClick={() => setContactQrOpen(true)}
-        onFocus={() => setContactQrOpen(true)}
-        onBlur={() => setContactQrOpen(false)}
-      >
-        <SiQq className='size-4' aria-hidden='true' />
-        <span>{t('QQ')}</span>
-      </button>
-      <div
-        className={cn(
-          'bg-background border-foreground/20 pointer-events-none absolute bottom-full left-1/2 z-20 mb-3 w-40 -translate-x-1/2 border p-2 transition-all duration-150',
-          contactQrOpen
-            ? 'translate-y-0 opacity-100'
-            : 'translate-y-1 opacity-0'
-        )}
-        role='tooltip'
-      >
-        <img
-          src={props.contactQrSrc}
-          alt={t('QQ')}
-          className='aspect-square w-full object-cover'
-        />
-        <p className='text-muted-foreground mt-2 text-center text-[11px] leading-4'>
-          {t('Scan the QQ QR code to contact us.')}
-        </p>
+  const contactControl =
+    props.contactQrSrc || props.storeQrValue ? (
+      <div className='flex flex-wrap items-center justify-center gap-2 sm:justify-end'>
+        <span className='text-muted-foreground/50 text-xs font-medium'>
+          {t('Contact')}
+        </span>
+        {props.contactQrSrc ? (
+          <FooterQrButton
+            label={t('QQ')}
+            ariaLabel={t('Show QQ contact QR code')}
+            description={t('Scan the QQ QR code to contact us.')}
+            icon={<SiQq className='size-4' aria-hidden='true' />}
+          >
+            <img
+              src={props.contactQrSrc}
+              alt={t('QQ')}
+              className='aspect-square w-full object-cover'
+            />
+          </FooterQrButton>
+        ) : null}
+        {props.storeQrValue ? (
+          <FooterQrButton
+            label={t('Store')}
+            ariaLabel={t('Show store purchase QR code')}
+            description={t('Scan the store QR code to buy recharge packages.')}
+            icon={
+              <img
+                src={props.storeIconSrc || '/store-icon.png'}
+                alt=''
+                className='size-4 object-contain opacity-75 brightness-0 group-hover/button:invert dark:invert'
+                aria-hidden='true'
+              />
+            }
+          >
+            <QRCodeSVG
+              value={props.storeQrValue}
+              size={144}
+              marginSize={1}
+              level='M'
+              className='aspect-square w-full'
+            />
+          </FooterQrButton>
+        ) : null}
       </div>
-    </div>
-  ) : null
+    ) : null
 
   if (footerHtml) {
     return (

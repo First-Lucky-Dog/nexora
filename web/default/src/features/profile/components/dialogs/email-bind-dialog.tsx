@@ -20,6 +20,7 @@ import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { translateApiMessage } from '@/lib/api-message'
 import { useCountdown } from '@/hooks/use-countdown'
 import { Button } from '@/components/ui/button'
 import {
@@ -55,6 +56,7 @@ export function EmailBindDialog({
   const [loading, setLoading] = useState(false)
   const [sendingCode, setSendingCode] = useState(false)
   const [email, setEmail] = useState('')
+  const [verificationEmail, setVerificationEmail] = useState('')
   const [code, setCode] = useState('')
   const {
     secondsLeft,
@@ -77,9 +79,15 @@ export function EmailBindDialog({
 
       if (response.success) {
         toast.success(t('Verification code sent! Please check your email.'))
+        setVerificationEmail(email.trim())
         startCountdown()
       } else {
-        toast.error(response.message || t('Failed to send verification code'))
+        toast.error(
+          translateApiMessage(
+            response.message,
+            'Failed to send verification code'
+          )
+        )
       }
     } catch (_error) {
       toast.error(t('Failed to send verification code'))
@@ -91,6 +99,15 @@ export function EmailBindDialog({
   const handleBind = async () => {
     if (!email || !code) {
       toast.error(t('Please enter email and verification code'))
+      return
+    }
+    if (verificationEmail && email.trim() !== verificationEmail) {
+      toast.error(
+        t(
+          'The verification code was sent to {{email}}. Please use that email address or send a new code.',
+          { email: verificationEmail }
+        )
+      )
       return
     }
 
@@ -107,7 +124,9 @@ export function EmailBindDialog({
         setCode('')
         resetCountdown()
       } else {
-        toast.error(response.message || t('Failed to bind email'))
+        toast.error(
+          translateApiMessage(response.message, 'Failed to bind email')
+        )
       }
     } catch (_error) {
       toast.error(t('Failed to bind email'))

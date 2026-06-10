@@ -19,6 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { useState } from 'react'
 import i18next from 'i18next'
 import { toast } from 'sonner'
+import { translateApiMessage } from '@/lib/api-message'
 import { useCountdown } from '@/hooks/use-countdown'
 import { sendEmailVerification } from '../api'
 import { EMAIL_VERIFICATION_COUNTDOWN } from '../constants'
@@ -62,7 +63,7 @@ export function useEmailVerification(options?: UseEmailVerificationOptions) {
         return true
       }
       toast.error(
-        res?.message || i18next.t('Failed to send verification email')
+        translateApiMessage(res?.message, 'Failed to send verification email')
       )
       return false
     } catch (_error) {

@@ -18,9 +18,9 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { useState, useEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import axios from 'axios'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { getUserModels } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { ComboboxInput } from '@/components/ui/combobox-input'
 import {
@@ -93,9 +93,49 @@ function buildCCSwitchURL(
   return `ccswitch://v1/import?${params.toString()}`
 }
 
+export function buildModelOptions(models: string[] = []) {
+  return models.map((m) => ({ value: m, label: m }))
+}
+
+export function normalizeApiKey(apiKey: string): string {
+  const key = apiKey.trim()
+  if (!key) return ''
+  return key.startsWith('sk-') ? key : `sk-${key}`
+}
+
+export function extractModelIds(response: unknown): string[] {
+  if (!response || typeof response !== 'object') return []
+
+  const data = (response as { data?: unknown }).data
+  if (!Array.isArray(data)) return []
+
+  return data
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null
+      const id = (item as { id?: unknown }).id
+      return typeof id === 'string' && id.trim() ? id : null
+    })
+    .filter((id): id is string => id !== null)
+}
+
+async function getApiKeyModelIds(apiKey: string): Promise<string[]> {
+  try {
+    const res = await axios.get('/v1/models', {
+      headers: {
+        'Cache-Control': 'no-store',
+        Authorization: `Bearer ${apiKey}`,
+      },
+    })
+    return extractModelIds(res.data)
+  } catch {
+    return []
+  }
+}
+
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
+  tokenId?: number
   tokenKey: string
 }
 
@@ -104,18 +144,20 @@ export function CCSwitchDialog(props: Props) {
   const [app, setApp] = useState<AppType>('claude')
   const [name, setName] = useState<string>(APP_CONFIGS.claude.defaultName)
   const [models, setModels] = useState<Record<string, string>>({})
+  const tokenKey = normalizeApiKey(props.tokenKey)
 
-  const { data: modelsData } = useQuery({
-    queryKey: ['user-models-ccswitch'],
-    queryFn: getUserModels,
-    enabled: props.open,
-    staleTime: 5 * 60 * 1000,
+  const { data: modelIds = [] } = useQuery({
+    queryKey: ['token-models-ccswitch', props.tokenId],
+    queryFn: () => getApiKeyModelIds(tokenKey),
+    enabled: props.open && tokenKey !== '',
+    refetchOnMount: 'always',
+    retry: false,
+    staleTime: 0,
   })
 
   const modelOptions = useMemo(() => {
-    const items = modelsData?.data ?? []
-    return items.map((m) => ({ value: m, label: m }))
-  }, [modelsData?.data])
+    return buildModelOptions(modelIds)
+  }, [modelIds])
 
   useEffect(() => {
     if (props.open) {
@@ -138,14 +180,15 @@ export function CCSwitchDialog(props: Props) {
   }
 
   const handleSubmit = () => {
+    if (!tokenKey) {
+      toast.warning(t('API key is loading, please try again in a moment'))
+      return
+    }
     if (!models.model) {
       toast.warning(t('Please select a primary model'))
       return
     }
-    const key = props.tokenKey.startsWith('sk-')
-      ? props.tokenKey
-      : `sk-${props.tokenKey}`
-    const url = buildCCSwitchURL(app, name, models, key)
+    const url = buildCCSwitchURL(app, name, models, tokenKey)
     window.open(url, '_blank')
     props.onOpenChange(false)
   }

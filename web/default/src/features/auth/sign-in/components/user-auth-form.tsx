@@ -24,6 +24,7 @@ import { Link } from '@tanstack/react-router'
 import { Loader2, LogIn, KeyRound } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { translateApiMessage } from '@/lib/api-message'
 import {
   buildAssertionResult,
   prepareCredentialRequestOptions,
@@ -212,7 +213,7 @@ export function UserAuthForm({
         toast.success(t('Signed in via WeChat'))
         handleWeChatDialogChange(false)
       } else {
-        toast.error(res?.message || loginFailedMessage)
+        toast.error(translateApiMessage(res?.message, 'Login failed'))
       }
     } catch (_error) {
       toast.error(loginFailedMessage)
@@ -241,7 +242,9 @@ export function UserAuthForm({
     try {
       const begin = await beginPasskeyLogin()
       if (!begin.success) {
-        throw new Error(begin.message || t('Failed to start Passkey login'))
+        throw new Error(
+          translateApiMessage(begin.message, 'Failed to start Passkey login')
+        )
       }
 
       const publicKey = prepareCredentialRequestOptions(
@@ -264,7 +267,12 @@ export function UserAuthForm({
 
       const finish = await finishPasskeyLogin(assertion)
       if (!finish.success) {
-        throw new Error(finish.message || t('Failed to complete Passkey login'))
+        throw new Error(
+          translateApiMessage(
+            finish.message,
+            'Failed to complete Passkey login'
+          )
+        )
       }
 
       if (!finish.data) {

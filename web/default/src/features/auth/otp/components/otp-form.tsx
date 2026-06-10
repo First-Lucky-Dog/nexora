@@ -24,6 +24,7 @@ import { Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { translateApiMessage } from '@/lib/api-message'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -96,7 +97,7 @@ export function OtpForm({ className, ...props }: OtpFormProps) {
       const res = await login2fa({ code })
 
       if (!res.success) {
-        toast.error(res.message || t('Invalid code'))
+        toast.error(translateApiMessage(res.message, 'Invalid code'))
         return
       }
 

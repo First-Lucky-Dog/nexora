@@ -31,6 +31,8 @@ import { useHomePageContent } from './hooks'
 const BRAND_NAME = 'AI充电站'
 const BRAND_LOGO_SRC = '/ai-charging-station-logo.png'
 const QQ_QR_SRC = '/qq-contact.jpg'
+const STORE_QR_VALUE = 'https://pay.ldxp.cn/shop/AIChargeHub'
+const STORE_ICON_SRC = '/store-icon.png'
 
 const modelGroups = [
   {
@@ -268,6 +270,8 @@ export function Home() {
         name={BRAND_NAME}
         logo={BRAND_LOGO_SRC}
         contactQrSrc={QQ_QR_SRC}
+        storeQrValue={STORE_QR_VALUE}
+        storeIconSrc={STORE_ICON_SRC}
       />
     </PublicLayout>
   )

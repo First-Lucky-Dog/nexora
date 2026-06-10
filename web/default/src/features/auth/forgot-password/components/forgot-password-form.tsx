@@ -23,6 +23,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { translateApiMessage } from '@/lib/api-message'
 import { cn } from '@/lib/utils'
 import { useCountdown } from '@/hooks/use-countdown'
 import { Button } from '@/components/ui/button'
@@ -80,7 +81,9 @@ export function ForgotPasswordForm({
         startCountdown()
         toast.success(t('Reset email sent, please check your inbox'))
       } else {
-        toast.error(res?.message || t('Failed to send reset email'))
+        toast.error(
+          translateApiMessage(res?.message, 'Failed to send reset email')
+        )
       }
     } catch (_error) {
       // Errors are handled by global interceptor

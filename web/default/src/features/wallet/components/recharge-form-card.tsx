@@ -17,7 +17,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { useState, useEffect } from 'react'
-import { Gift, ExternalLink, Loader2, Receipt, WalletCards } from 'lucide-react'
+import {
+  Gift,
+  ExternalLink,
+  Loader2,
+  Receipt,
+  Store,
+  WalletCards,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -136,6 +143,7 @@ export function RechargeFormCard({
     Array.isArray(waffoPayMethods) && waffoPayMethods.length > 0
   const minTopup = getMinTopupAmount(topupInfo)
   const redemptionEnabled = topupInfo?.enable_redemption !== false
+  const externalTopupLink = topupLink?.trim()
 
   if (loading) {
     return (
@@ -206,6 +214,46 @@ export function RechargeFormCard({
       }
       contentClassName='space-y-4 sm:space-y-6'
     >
+      {externalTopupLink && (
+        <div className='border-border/80 bg-muted/20 relative overflow-hidden rounded-xl border p-3 sm:p-4'>
+          <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='flex min-w-0 items-start gap-3'>
+              <div className='bg-background flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border shadow-sm'>
+                <Store className='h-4 w-4' />
+              </div>
+              <div className='min-w-0 space-y-1'>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <p className='text-sm font-semibold'>
+                    {t('Store Purchase')}
+                  </p>
+                  <span className='bg-foreground text-background rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase'>
+                    {t('Recommended')}
+                  </span>
+                </div>
+                <p className='text-muted-foreground text-xs sm:text-sm'>
+                  {t(
+                    'Buy a recharge package in the store, then redeem the code here.'
+                  )}
+                </p>
+              </div>
+            </div>
+            <Button
+              className='w-full gap-2 sm:w-auto'
+              render={
+                <a
+                  href={externalTopupLink}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                />
+              }
+            >
+              {t('Go to Store')}
+              <ExternalLink className='h-4 w-4' />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Online Topup Section */}
       {hasAnyTopup ? (
         <div className='space-y-4 sm:space-y-6'>

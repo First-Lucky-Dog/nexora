@@ -56,6 +56,8 @@ interface WalletProps {
   initialShowHistory?: boolean
 }
 
+const DEFAULT_STORE_TOPUP_LINK = 'https://pay.ldxp.cn/shop/AIChargeHub'
+
 export function Wallet(props: WalletProps) {
   const { t } = useTranslation()
   const [user, setUser] = useState<UserWalletData | null>(null)
@@ -288,7 +290,7 @@ export function Wallet(props: WalletProps) {
                   onRedemptionCodeChange={setRedemptionCode}
                   onRedeem={handleRedeem}
                   redeeming={redeeming}
-                  topupLink={topupInfo?.topup_link}
+                  topupLink={topupInfo?.topup_link || DEFAULT_STORE_TOPUP_LINK}
                   loading={topupLoading}
                   priceRatio={(status?.price as number) || 1}
                   usdExchangeRate={effectiveUsdExchangeRate}

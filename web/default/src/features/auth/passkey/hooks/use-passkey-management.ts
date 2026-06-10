@@ -19,6 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import i18next from 'i18next'
 import { toast } from 'sonner'
+import { translateApiMessage } from '@/lib/api-message'
 import {
   buildRegistrationResult,
   createCredential,
@@ -57,7 +58,9 @@ export function usePasskeyManagement(
         onStatusChange?.(res.data ?? null)
       } else {
         setStatus(null)
-        toast.error(res.message || i18next.t('Failed to load Passkey status'))
+        toast.error(
+          translateApiMessage(res.message, 'Failed to load Passkey status')
+        )
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -94,8 +97,10 @@ export function usePasskeyManagement(
       const beginResponse = await beginPasskeyRegistration()
       if (!beginResponse.success) {
         toast.error(
-          beginResponse.message ||
-            i18next.t('Failed to start Passkey registration')
+          translateApiMessage(
+            beginResponse.message,
+            'Failed to start Passkey registration'
+          )
         )
         return false
       }
@@ -121,7 +126,10 @@ export function usePasskeyManagement(
       const finishResponse = await finishPasskeyRegistration(attestation)
       if (!finishResponse.success) {
         toast.error(
-          finishResponse.message || i18next.t('Failed to register Passkey')
+          translateApiMessage(
+            finishResponse.message,
+            'Failed to register Passkey'
+          )
         )
         return false
       }
@@ -152,7 +160,9 @@ export function usePasskeyManagement(
     try {
       const res = await deletePasskey()
       if (!res.success) {
-        toast.error(res.message || i18next.t('Failed to remove Passkey'))
+        toast.error(
+          translateApiMessage(res.message, 'Failed to remove Passkey')
+        )
         return false
       }
 
