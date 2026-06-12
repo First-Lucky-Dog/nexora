@@ -4,6 +4,37 @@
 
 This is an AI API gateway/proxy built with Go. It aggregates 40+ upstream AI providers (OpenAI, Claude, Gemini, Azure, AWS Bedrock, etc.) behind a unified API, with user management, billing, rate limiting, and an admin dashboard.
 
+Keep `CLAUDE.md` in sync with this file — they are intentional mirrors of the same conventions.
+
+## Commands
+
+### Backend (Go, from repo root)
+
+- Run dev server: `go run main.go` (port 3000 by default; config via `.env` — see `.env.example`; with no `SQL_DSN`/`SQLITE_PATH` it falls back to a local SQLite db `one-api.db`)
+- Build: `go build` — **gotcha:** `main.go` embeds both frontends via `go:embed web/default/dist` and `go:embed web/classic/dist`; compilation fails unless both `dist/` directories exist. Build frontends first: `make build-all-frontends`.
+- All tests: `go test ./...`
+- One package: `go test ./service/`
+- One test: `go test ./service/ -run TestName`
+
+Tests are standard Go tests colocated with source (`*_test.go`); there is no separate test directory.
+
+### Frontend (from `web/default/`, use Bun)
+
+- `bun install` — install dependencies
+- `bun run dev` — dev server (Rsbuild)
+- `bun run build` — production build; `bun run build:check` — typecheck then build
+- `bun run typecheck` — `tsc -b`
+- `bun run lint` — ESLint
+- `bun run format` / `bun run format:check` — Prettier
+- `bun run i18n:sync` — sync locale JSON files after adding/changing `t('...')` keys
+
+### Makefile / Docker
+
+- `make dev-api` — backend + PostgreSQL via `docker-compose.dev.yml`
+- `make dev-web` / `make dev-web-classic` — frontend dev servers
+- `make build-all-frontends` — build both frontends (required before `go build`)
+- `make reset-setup` — reset the first-run setup wizard state in the dev DB
+
 ## Tech Stack
 
 - **Backend**: Go 1.22+, Gin web framework, GORM v2 ORM
@@ -38,6 +69,29 @@ web/             — Frontend themes container
   web/classic/   — Classic frontend (React 18, Vite, Semi Design)
   web/default/src/i18n/ — Frontend internationalization (i18next, zh/en/fr/ru/ja/vi)
 ```
+
+### Relay Request Flow (the core path)
+
+1. **Routing** — `router/relay-router.go` maps every relay endpoint (OpenAI `/v1/chat/completions`, `/v1/responses`, `/v1/images/*`, `/v1/audio/*`, `/v1/embeddings`, `/v1/rerank`, Claude `/v1/messages`, Gemini native, WebSocket realtime) to `controller.Relay(c, types.RelayFormat*)`. Middleware chain on `/v1`: `TokenAuth()` (API key → user/token in context) → `ModelRequestRateLimit()` → `Distribute()` (`middleware/distributor.go` — picks a channel for the requested model + user group and stores it in the gin context).
+2. **Retry/failover loop** — `controller/relay.go` invokes the format handler and on failure retries up to `common.RetryTimes`, re-selecting a channel while excluding failed ones (`shouldRetry` decides based on the error).
+3. **Format handlers** — `relay/*_handler.go` (chat, claude, gemini, embedding, image, audio, rerank, responses, …) parse the client request into a unified DTO, pre-consume quota, then dispatch to the adaptor.
+4. **Adaptors** — `relay.GetAdaptor(apiType)` (`relay/relay_adaptor.go`) returns the provider adaptor. Each adaptor in `relay/channel/<provider>/` implements `channel.Adaptor` (`relay/channel/adapter.go`): the `Convert*Request` methods translate the unified DTO into the provider's wire format, `DoRequest` sends it, `DoResponse` converts the (possibly streaming) response back into the client's requested format and returns usage.
+5. **Billing** — usage from `DoResponse` is settled via `service/` (quota calculation; see Rule 7 for expression-based pricing) and logged via `model/`.
+
+Cross-format conversion is the point of the design: any client format (OpenAI / Claude / Gemini) can be served by any channel type. The channel type → API type mapping lives in `common/api_type.go` (`ChannelType2APIType`).
+
+Async task providers (video/music: suno, kling, sora, vidu, …) implement the separate `TaskAdaptor` interface and live in `relay/channel/task/`, routed through `controller.RelayTask`.
+
+### Adding a New Provider Channel
+
+1. Add the channel-type constant in `constant/channel.go` (and an API-type in `constant/api_type.go` if the wire format is new); map them in `common/api_type.go`.
+2. Create `relay/channel/<provider>/` implementing `channel.Adaptor`.
+3. Register it in the `GetAdaptor` switch in `relay/relay_adaptor.go`.
+4. Follow Rule 4 (StreamOptions) below.
+
+### Frontends
+
+Two independent frontends exist (`web/default/` is the actively developed one; `web/classic/` is legacy). Both are compiled into `dist/` and embedded into the Go binary via `go:embed` in `main.go`.
 
 ## Internationalization (i18n)
 
