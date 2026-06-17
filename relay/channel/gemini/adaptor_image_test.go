@@ -194,7 +194,7 @@ func TestOpenAIImageGenerationResponsePreservesURLForGPTImage2(t *testing.T) {
 	}
 
 	upstreamBody := []byte(`{"created":1779949942,"data":[{"url":"https://example.com/image.png"}],"usage":{"total_tokens":1}}`)
-	usage, newAPIError := openai.OpenaiHandlerWithUsage(c, info, testHTTPResponse(upstreamBody))
+	usage, newAPIError := openai.OpenaiImageHandler(c, info, testHTTPResponse(upstreamBody))
 	require.Nil(t, newAPIError)
 	require.NotNil(t, usage)
 
