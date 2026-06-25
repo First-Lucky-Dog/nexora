@@ -43,3 +43,7 @@ new-api-local.sql
 docs/openapi/image-and-prompt-models.md
 nexora-new-api-94f8e997.tar
 
+# Local-only MCP / dev overrides (machine-specific paths, contain dev DB creds)
+.mcp.json
+docker-compose.dev.override.yml
+

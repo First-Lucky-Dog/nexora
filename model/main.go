@@ -294,6 +294,47 @@ func migrateDB() error {
 			return err
 		}
 	}
+	if err := backfillUserEmailFromUsername(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// backfillUserEmailFromUsername fills the email column for legacy users whose
+// username is itself a valid email address but whose email column is empty.
+// Such users were created while email verification was disabled, so their email
+// was never stored and they could not recover their password by email.
+//
+// It is idempotent (only touches empty emails) and works on SQLite, MySQL and
+// PostgreSQL because the email-format check and all matching happen in Go via
+// GORM rather than in DB-specific SQL. Any address that already belongs to
+// another user is skipped, because IsEmailAlreadyTaken requires an exact single
+// match — creating a duplicate would silently re-break password reset.
+func backfillUserEmailFromUsername() error {
+	var users []User
+	if err := DB.Where("email = ? OR email IS NULL", "").Find(&users).Error; err != nil {
+		return err
+	}
+	updated := 0
+	for _, u := range users {
+		if common.Validate.Var(u.Username, "email") != nil {
+			continue // username is not an email address
+		}
+		var count int64
+		if err := DB.Model(&User{}).Where("email = ?", u.Username).Count(&count).Error; err != nil {
+			return err
+		}
+		if count > 0 {
+			continue // another user already owns this email
+		}
+		if err := DB.Model(&User{}).Where("id = ?", u.Id).Update("email", u.Username).Error; err != nil {
+			return err
+		}
+		updated++
+	}
+	if updated > 0 {
+		common.SysLog(fmt.Sprintf("backfilled email from username for %d legacy user(s)", updated))
+	}
 	return nil
 }
 

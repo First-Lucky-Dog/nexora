@@ -221,7 +221,12 @@ func Register(c *gin.Context) {
 		InviterId:   inviterId,
 		Role:        common.RoleCommonUser, // 明确设置角色为普通用户
 	}
-	if common.EmailVerificationEnabled {
+	// Persist a syntactically valid email whenever the client supplies one, so that
+	// users can recover their password by email even when email verification is
+	// disabled. When verification is enabled the address has already been verified
+	// above. CheckUserExistOrDeleted already rejected duplicate emails, so this keeps
+	// each email unique (IsEmailAlreadyTaken relies on an exact single match).
+	if user.Email != "" && common.Validate.Var(user.Email, "email") == nil {
 		cleanUser.Email = user.Email
 	}
 	if err := cleanUser.Insert(inviterId); err != nil {

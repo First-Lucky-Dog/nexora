@@ -36,16 +36,16 @@ const STORE_ICON_SRC = '/store-icon.png'
 
 const modelGroups = [
   {
-    provider: 'Gemini',
-    models: ['nanobanana', 'nanobanana2', 'nanobananapro'],
+    category: 'Text Chat',
+    capabilities: ['Smart Q&A', 'Long-context Understanding'],
   },
   {
-    provider: 'GPT',
-    models: ['image2'],
+    category: 'Image Generation',
+    capabilities: ['HD Drawing', 'Multi-image Fusion', 'Fast Rendering'],
   },
   {
-    provider: 'Midjourney',
-    models: ['Midjourney'],
+    category: 'Video Generation',
+    capabilities: ['Text-to-Video', 'Image-to-Video'],
   },
 ] as const
 
@@ -212,7 +212,7 @@ export function Home() {
                 <div className='font-mono text-xs font-semibold tracking-[0.24em] uppercase'>
                   {t('{{count}} models', {
                     count: modelGroups.reduce(
-                      (total, group) => total + group.models.length,
+                      (total, group) => total + group.capabilities.length,
                       0
                     ),
                   })}
@@ -229,7 +229,7 @@ export function Home() {
             <div className='grid flex-1 gap-3 p-4 md:p-6'>
               {modelGroups.map((group, index) => (
                 <div
-                  key={group.provider}
+                  key={group.category}
                   className='border-border bg-background hover:bg-foreground hover:text-background group grid min-h-[8.5rem] gap-4 border p-4 transition-colors duration-150 sm:p-5 lg:grid-cols-[minmax(18rem,0.9fr)_1fr] lg:items-center'
                 >
                   <div>
@@ -240,17 +240,17 @@ export function Home() {
                       </span>
                     </div>
                     <div className='mt-4 text-[clamp(2.65rem,4vw,3.2rem)] leading-[0.9] font-light tracking-normal'>
-                      {group.provider}
+                      {t(group.category)}
                     </div>
                   </div>
 
                   <div className='grid gap-2'>
-                    {group.models.map((model) => (
+                    {group.capabilities.map((capability) => (
                       <div
-                        key={model}
+                        key={capability}
                         className='group-hover:bg-background group-hover:text-foreground border border-current px-3 py-2 font-mono text-sm font-medium tracking-[0.04em] break-all'
                       >
-                        {model}
+                        {t(capability)}
                       </div>
                     ))}
                   </div>
@@ -259,9 +259,13 @@ export function Home() {
             </div>
 
             <div className='border-border grid grid-cols-3 border-t font-mono text-[11px] font-semibold tracking-[0.22em] uppercase'>
-              <div className='px-3 py-4'>Gemini</div>
-              <div className='border-border border-x px-3 py-4'>GPT</div>
-              <div className='px-3 py-4 text-right'>Midjourney</div>
+              <div className='px-3 py-4'>{t(modelGroups[0].category)}</div>
+              <div className='border-border border-x px-3 py-4'>
+                {t(modelGroups[1].category)}
+              </div>
+              <div className='px-3 py-4 text-right'>
+                {t(modelGroups[2].category)}
+              </div>
             </div>
           </div>
         </section>

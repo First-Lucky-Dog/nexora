@@ -39,7 +39,7 @@ Tests are standard Go tests colocated with source (`*_test.go`); there is no sep
 
 ## Tech Stack
 
-- **Backend**: Go 1.22+, Gin web framework, GORM v2 ORM
+- **Backend**: Go 1.25+, Gin web framework, GORM v2 ORM
 - **Frontend**: React 19, TypeScript, Rsbuild, Base UI, Tailwind CSS
 - **Databases**: SQLite, MySQL, PostgreSQL (all three must be supported)
 - **Cache**: Redis (go-redis) + in-memory cache
@@ -107,6 +107,15 @@ Two independent frontends exist (`web/default/` is the actively developed one; `
 - Translation files: `web/default/src/i18n/locales/{lang}.json` — flat JSON, keys are English source strings
 - Usage: `useTranslation()` hook, call `t('English key')` in components
 - CLI tools: `bun run i18n:sync` (from `web/default/`)
+
+## Tooling & Skill Routing
+
+Claude Code auto-invokes Skills and MCP tools when a task matches their description — it does not need to be told to. The mappings below are this repo's preferred defaults (preferences, not hard rules — skip any that don't fit). These MCP servers / skills are configured locally (see `.mcp.json`, which is gitignored); if a tool isn't present, just proceed without it.
+
+- **Library / framework docs** (Gin, GORM, go-redis, React 19, Rsbuild, Base UI, Tailwind, i18next, …) → use the **context7** MCP (`resolve-library-id` → `query-docs`) instead of relying on memory; prefer it over web search for API / config / version-migration questions.
+- **Inspecting the dev database** (schema, row counts, debugging data) → use the **postgres-dev** MCP (read-only) against the docker dev Postgres. Requires the dev stack up and the port exposed via `docker-compose.dev.override.yml`.
+- **Verifying frontend changes** in `web/default/` (UI behavior, screenshots, browser logs) → use the **webapp-testing** skill (Playwright).
+- **After a feature or non-trivial change** → run **/code-review**. **Before** fixing a bug → **systematic-debugging**. **Before** writing a feature or bugfix → **test-driven-development**.
 
 ## Rules
 
@@ -191,3 +200,11 @@ For request structs that are parsed from client JSON and then re-marshaled to up
 ### Rule 7: Billing Expression System — Read `pkg/billingexpr/expr.md`
 
 When working on tiered/dynamic billing (expression-based pricing), you MUST read `pkg/billingexpr/expr.md` first. It documents the design philosophy, expression language (variables, functions, examples), full system architecture (editor → storage → pre-consume → settlement → log display), token normalization rules (`p`/`c` auto-exclusion), quota conversion, and expression versioning. All code changes to the billing expression system must follow the patterns described in that document.
+
+### Rule 8: PR Submission — CI Auto-Closes AI-Slop PRs
+
+`.github/workflows/pr-check.yml` runs `peakoss/anti-slop` on every opened PR. It will auto-close the PR if:
+- The body contains the blocked term `🤖 Generated with Claude Code` — do NOT include this attribution in PR descriptions or commit messages here.
+- The contribution template is missing (the `✅ 提交前检查项 / Checklist` section is required).
+
+PRs are expected to be human-reviewed and verified, not raw AI output.

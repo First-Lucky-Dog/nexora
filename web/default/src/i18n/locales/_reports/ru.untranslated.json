@@ -1,3 +1,12 @@
 {
-  "CC Switch": "CC Switch"
+  "CC Switch": "CC Switch",
+  "HD Drawing": "HD Drawing",
+  "Multi-image Fusion": "Multi-image Fusion",
+  "Fast Rendering": "Fast Rendering",
+  "Text Chat": "Text Chat",
+  "Smart Q&A": "Smart Q&A",
+  "Long-context Understanding": "Long-context Understanding",
+  "Video Generation": "Video Generation",
+  "Text-to-Video": "Text-to-Video",
+  "Image-to-Video": "Image-to-Video"
 }
