@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button'
 import { RichContent } from '@/components/rich-content'
 import { PublicLayout } from '@/components/layout'
 import { Footer } from '@/components/layout/components/footer'
+import { isLikelyHtml } from '@/lib/content-format'
 import { useHomePageContent } from './hooks'
 
 const BRAND_NAME = 'AI充电站'
@@ -147,7 +148,11 @@ export function Home() {
       <PublicLayout showMainContainer={false} {...layoutBrandProps}>
         <main className='overflow-x-hidden'>
           <div className='container mx-auto py-8'>
-            <RichContent content={content} className='custom-home-content' />
+            <RichContent
+              mode={isLikelyHtml(content) ? 'html' : 'markdown'}
+              content={content}
+              className='custom-home-content'
+            />
           </div>
         </main>
       </PublicLayout>
