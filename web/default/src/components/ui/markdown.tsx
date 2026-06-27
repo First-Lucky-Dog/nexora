@@ -22,6 +22,7 @@ import remarkGfm from 'remark-gfm'
 import { cn } from '@/lib/utils'
 
 interface MarkdownProps {
+  breaks?: boolean
   children: string
   className?: string
 }
