@@ -197,6 +197,7 @@ const MODEL_MAPPING_PREVIEW_FALLBACK: Array<{
 }> = [{ source: 'client-model', target: 'upstream-model' }]
 
 const ADVANCED_SETTINGS_EXPANDED_KEY = 'channel-advanced-settings-expanded'
+const ADVANCED_CUSTOM_ROUTE_TYPE_PREVIEW_LIMIT = 3
 const UPSTREAM_DETECTED_MODEL_PREVIEW_LIMIT = 8
 
 function readAdvancedSettingsPreference(): boolean {
@@ -418,6 +419,18 @@ export function ChannelMutateDrawer({
     () => getAdvancedCustomStats(currentAdvancedCustom),
     [currentAdvancedCustom]
   )
+  const advancedCustomRouteTypeLabels =
+    advancedCustomStats.routeTypeLabels.slice(
+      0,
+      ADVANCED_CUSTOM_ROUTE_TYPE_PREVIEW_LIMIT
+    )
+  const hiddenAdvancedCustomRouteTypeCount =
+    advancedCustomStats.routeTypeLabels.length -
+    advancedCustomRouteTypeLabels.length
+  const advancedCustomRouteTypeTitle =
+    hiddenAdvancedCustomRouteTypeCount > 0
+      ? advancedCustomStats.routeTypeLabels.join(', ')
+      : undefined
 
   // Get all models list
   const allModelsList = useMemo(
@@ -1845,6 +1858,28 @@ export function ChannelMutateDrawer({
                                     {t('Routes')}:{' '}
                                     {advancedCustomStats.routeCount}
                                   </Badge>
+                                  {advancedCustomRouteTypeLabels.map(
+                                    (label) => (
+                                      <Badge
+                                        key={label}
+                                        variant='outline'
+                                        className='max-w-[12rem]'
+                                        title={label}
+                                      >
+                                        <span className='truncate'>
+                                          {label}
+                                        </span>
+                                      </Badge>
+                                    )
+                                  )}
+                                  {hiddenAdvancedCustomRouteTypeCount > 0 && (
+                                    <Badge
+                                      variant='outline'
+                                      title={advancedCustomRouteTypeTitle}
+                                    >
+                                      +{hiddenAdvancedCustomRouteTypeCount}
+                                    </Badge>
+                                  )}
                                   {!advancedCustomStats.valid && (
                                     <Badge variant='destructive'>
                                       {t('Incomplete')}
