@@ -16,8 +16,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { api, type ApiRequestConfig } from '@/lib/api'
 import { getGroups as getUserGroups } from '@/features/users/api'
+import { api, type ApiRequestConfig } from '@/lib/api'
+
 import type {
   AddChannelRequest,
   BatchDeleteParams,
@@ -53,6 +54,10 @@ export type CodexUsageResponse = {
   upstream_status?: number
   data?: Record<string, unknown>
 }
+
+export type CodexResetCreditsResponse = CodexUsageResponse
+
+export type CodexUsageResetResponse = CodexUsageResponse
 
 export type CodexCredentialRefreshResponse = {
   success: boolean
@@ -129,6 +134,36 @@ export async function updateChannel(
   const res = await api.put(
     '/api/channel/',
     { id, ...data },
+    channelActionConfig()
+  )
+  return res.data
+}
+
+/**
+ * Update channel enabled/disabled status.
+ */
+export async function updateChannelStatus(
+  id: number,
+  status: number
+): Promise<{ success: boolean; message?: string; data?: boolean }> {
+  const res = await api.post(
+    `/api/channel/${id}/status`,
+    { status },
+    channelActionConfig()
+  )
+  return res.data
+}
+
+/**
+ * Batch update channel enabled/disabled status.
+ */
+export async function batchUpdateChannelStatus(
+  ids: number[],
+  status: number
+): Promise<{ success: boolean; message?: string; data?: number }> {
+  const res = await api.post(
+    '/api/channel/status/batch',
+    { ids, status },
     channelActionConfig()
   )
   return res.data
@@ -291,6 +326,27 @@ export async function getCodexUsage(
 ): Promise<CodexUsageResponse> {
   const res = await api.get(
     `/api/channel/${channelId}/codex/usage`,
+    channelActionConfig({ disableDuplicate: true })
+  )
+  return res.data
+}
+
+export async function getCodexResetCredits(
+  channelId: number
+): Promise<CodexResetCreditsResponse> {
+  const res = await api.get(
+    `/api/channel/${channelId}/codex/usage/reset-credits`,
+    channelActionConfig({ disableDuplicate: true })
+  )
+  return res.data
+}
+
+export async function resetCodexUsage(
+  channelId: number
+): Promise<CodexUsageResetResponse> {
+  const res = await api.post(
+    `/api/channel/${channelId}/codex/usage/reset`,
+    {},
     channelActionConfig({ disableDuplicate: true })
   )
   return res.data
