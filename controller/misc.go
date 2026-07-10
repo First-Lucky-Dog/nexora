@@ -236,7 +236,10 @@ func GetHomePageContent(c *gin.Context) {
 func SendEmailVerification(c *gin.Context) {
 	email := model.NormalizeEmail(c.Query("email"))
 	if err := common.Validate.Var(email, "required,email"); err != nil {
-		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "Please enter a valid email address",
+		})
 		return
 	}
 	parts := strings.Split(email, "@")
